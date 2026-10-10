@@ -1,0 +1,12 @@
+Tileflow Community Maps
+
+Contains code and original map artwork extracted from Tileflow SDK's @tileflow/maps package:
+https://github.com/tileflow/tileflow-sdk/tree/0002bc06da87606fa99b98d09191afa87ef20567/packages/maps
+
+The extracted code and original artwork retain their Apache License 2.0 terms.
+The original Cyberpunk extraction was briefly named Neon Grid; its canonical community name is
+Cyberpunk. Matrix is now Terminal. This repository owns their map, theme, and icon identifiers.
+Super Tile World was extracted from revision d2e09827a37b76a0a5d1750ecec47d02a968d8b2,
+including its original artwork and font notices. Package resources are relocated and shared
+authoring helpers are adapted to public Core APIs. Font bytes are preserved from the source
+revision, including the documented Tile World Arcade naming derivative.

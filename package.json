@@ -1,0 +1,63 @@
+{
+  "name": "@tileflow/community-maps",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Maps made with Tileflow. Explore, remix, and contribute.",
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tileflow/community-maps.git"
+  },
+  "homepage": "https://github.com/tileflow/community-maps",
+  "bugs": {
+    "url": "https://github.com/tileflow/community-maps/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "maps/*/assets/**",
+    "LICENSE",
+    "NOTICE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --no-splitting",
+    "prepare": "npm run build",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "check": "npm run typecheck && npm run build && npm test && npm run validate:maps",
+    "validate:maps": "tileflow validate --config maps/cyberpunk/tileflow.config.ts && tileflow validate --config maps/terminal/tileflow.config.ts && tileflow validate --config maps/super-tile-world/tileflow.config.ts",
+    "preview:cyberpunk": "tileflow preview --config maps/cyberpunk/tileflow.config.ts",
+    "preview:terminal": "tileflow preview --config maps/terminal/tileflow.config.ts",
+    "build:cyberpunk": "tileflow build --config maps/cyberpunk/tileflow.config.ts --out .tileflow/build/cyberpunk",
+    "build:terminal": "tileflow build --config maps/terminal/tileflow.config.ts --out .tileflow/build/terminal",
+    "preview:super-tile-world": "tileflow preview --config maps/super-tile-world/tileflow.config.ts",
+    "build:super-tile-world": "tileflow build --config maps/super-tile-world/tileflow.config.ts --out .tileflow/build/super-tile-world"
+  },
+  "peerDependencies": {
+    "@tileflow/core": ">=0.1.0-alpha.30 <0.1.0-beta.0"
+  },
+  "devDependencies": {
+    "@tileflow/core": "0.1.0-alpha.30",
+    "@tileflow/dev": "0.1.0-alpha.28",
+    "@maplibre/maplibre-gl-style-spec": "26.4.2",
+    "@types/node": "25.9.2",
+    "tileflow": "0.1.0-alpha.9",
+    "tsup": "8.5.1",
+    "tsx": "4.23.12",
+    "typescript": "6.0.3"
+  }
+}
