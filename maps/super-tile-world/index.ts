@@ -1105,8 +1105,7 @@ export const superTileWorld = bindCommunityMapTheme(
       vegetation: withRenderStack(
         vegetation({
           mode: "flat",
-          minZoom: 17,
-          flat: { opacity: 0, strokeOpacity: 0 },
+          flat: { minZoom: 17, opacity: 0, strokeOpacity: 0 },
         }),
         {
           pixelTrees: renderPass({

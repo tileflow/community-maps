@@ -51,11 +51,11 @@
     "@tileflow/core": ">=0.1.0-alpha.30 <0.1.0-beta.0"
   },
   "devDependencies": {
-    "@tileflow/core": "0.1.0-alpha.30",
-    "@tileflow/dev": "0.1.0-alpha.28",
+    "@tileflow/core": "0.1.0-alpha.32",
+    "@tileflow/dev": "0.1.0-alpha.30",
     "@maplibre/maplibre-gl-style-spec": "26.4.2",
     "@types/node": "25.9.2",
-    "tileflow": "0.1.0-alpha.9",
+    "tileflow": "0.1.0-alpha.11",
     "tsup": "8.5.1",
     "tsx": "4.23.12",
     "typescript": "6.0.3"
