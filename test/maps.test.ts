@@ -8,7 +8,7 @@ import { createStyle, defineMap, resolveMap } from "@tileflow/core";
 import {
   createTileflowBuildArtifacts,
   disposeTileflowBuildArtifacts,
-} from "@tileflow/dev";
+} from "@tileflow/dev/artifacts";
 import { cyberpunk, terminal, superTileWorld } from "../src";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
