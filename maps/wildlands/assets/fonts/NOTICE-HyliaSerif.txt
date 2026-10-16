@@ -1,0 +1,17 @@
+Hylia Serif Beta v0.009 — Omni Jacala (Artsy Omni)
+
+Source: https://artsyomni.com/hyliaserif
+Download: https://artsyomni.com/content/2-hyliaserif/download/hyliaserif.zip
+Author's redistribution notes: https://artsyomni.com/hyliaserif/download
+Retrieved 2026-10-16. Original font binary is unmodified.
+
+This is a fan-made approximation of the Breath of the Wild display lettering,
+not Nintendo's original font. Hylia Serif is NOT covered by the repository's
+Apache-2.0 license or the Noto Sans Open Font License.
+
+The author's website makes the font available free of charge and prohibits
+redistribution for profit. It also asks redistributors to notify the author and
+keep up with current releases. No notification or publication has been performed
+as part of this local preview. Consult the linked author terms before distribution.
+The download archive contains no separate license file; this notice records the
+provenance and published conditions rather than granting additional rights.

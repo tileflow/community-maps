@@ -13,6 +13,12 @@ icons, patterns, fonts, and a ready-to-preview configuration.
 Previews show Madrid. Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright).
 See [preview and asset attribution](THIRD_PARTY_NOTICES.md).
 
+[![Wildlands: an olive adventure atlas of Lake Sanabria](maps/wildlands/preview.webp)](maps/wildlands)
+
+[Wildlands](maps/wildlands) is a new adventure atlas with engraved contours, individually mapped trees,
+cream paths, and original exploration pins. Its preview shows Lake Sanabria: data © OpenStreetMap
+contributors, OpenMapTiles and Tileflow; elevation © [Mapterhorn](https://mapterhorn.com/attribution).
+
 ## Try a map
 
 Use Node.js 22 or newer and npm. From a terminal:
@@ -30,6 +36,8 @@ Open the local address printed by the CLI. To try Terminal, stop the preview and
 npm run preview:terminal
 # Or explore the pixel-art world:
 npm run preview:super-tile-world
+# Or the adventure atlas:
+npm run preview:wildlands
 ```
 
 Preview uses Tileflow World over the network. Local authoring does not require a Tileflow account
@@ -49,6 +57,7 @@ npm run validate:maps
 npm run build:cyberpunk
 npm run build:terminal
 npm run build:super-tile-world
+npm run build:wildlands
 ```
 
 The build commands write each map to `.tileflow/build/<map-id>/`, with styles and resources for
@@ -96,6 +105,7 @@ framework integration. Use the same Core version in the map package and its cons
 | Cyberpunk        | `cyberpunk`      | `cyberpunk`        |
 | Terminal         | `terminal`       | `terminal`         |
 | Super Tile World | `superTileWorld` | `super-tile-world` |
+| Wildlands        | `wildlands`     | `wildlands`       |
 
 These maps and their assets are maintained here, independently of the official `@tileflow/maps`
 catalog. Import them from `@tileflow/community-maps`. When migrating from older SDK versions,

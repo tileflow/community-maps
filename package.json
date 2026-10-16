@@ -39,13 +39,15 @@
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test test/*.test.ts",
     "check": "npm run typecheck && npm run build && npm test && npm run validate:maps",
-    "validate:maps": "tileflow validate --config maps/cyberpunk/tileflow.config.ts && tileflow validate --config maps/terminal/tileflow.config.ts && tileflow validate --config maps/super-tile-world/tileflow.config.ts",
+    "validate:maps": "tileflow validate --config maps/cyberpunk/tileflow.config.ts && tileflow validate --config maps/terminal/tileflow.config.ts && tileflow validate --config maps/super-tile-world/tileflow.config.ts && tileflow validate --config maps/wildlands/tileflow.config.ts",
     "preview:cyberpunk": "tileflow preview --config maps/cyberpunk/tileflow.config.ts",
     "preview:terminal": "tileflow preview --config maps/terminal/tileflow.config.ts",
     "build:cyberpunk": "tileflow build --config maps/cyberpunk/tileflow.config.ts --out .tileflow/build/cyberpunk",
     "build:terminal": "tileflow build --config maps/terminal/tileflow.config.ts --out .tileflow/build/terminal",
     "preview:super-tile-world": "tileflow preview --config maps/super-tile-world/tileflow.config.ts",
-    "build:super-tile-world": "tileflow build --config maps/super-tile-world/tileflow.config.ts --out .tileflow/build/super-tile-world"
+    "build:super-tile-world": "tileflow build --config maps/super-tile-world/tileflow.config.ts --out .tileflow/build/super-tile-world",
+    "preview:wildlands": "tileflow preview --config maps/wildlands/tileflow.config.ts",
+    "build:wildlands": "tileflow build --config maps/wildlands/tileflow.config.ts --out .tileflow/build/wildlands"
   },
   "peerDependencies": {
     "@tileflow/core": ">=0.1.0-alpha.30 <0.1.0-beta.0"

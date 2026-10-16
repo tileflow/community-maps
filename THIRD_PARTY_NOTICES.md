@@ -6,7 +6,19 @@ Cyberpunk, Terminal, and Super Tile World were extracted from the corresponding 
 Tileflow icon/pattern artwork in `@tileflow/maps`. Their source and artwork retain Apache-2.0.
 See [NOTICE](NOTICE) for origin and modifications. No geographic tile archive is included.
 
-## Oxanium
+## Wildlands
+
+Wildlands is a new standalone Tileflow map with original SVG symbols, individual tree drawings,
+and a paper pattern, inspired by user-supplied Breath of the Wild map references. No Nintendo artwork,
+Mapbox style, or reference screenshot is included. Code and artwork follow Apache-2.0.
+Its new Sanabria preview uses Tileflow World/OpenStreetMap and Mapterhorn elevation;
+see [Wildlands credits](maps/wildlands/README.md). Wildlands packages the unmodified Hylia Serif
+Beta v0.009 font by Omni Jacala (Artsy Omni) and Noto Sans Regular. Hylia Serif is a fan
+approximation of BOTW lettering and retains its author's conditions, including no redistribution
+for profit; it is not Apache-2.0 or SIL OFL. Noto Sans is SIL OFL 1.1. See
+[font provenance and notices](maps/wildlands/assets/fonts/README.md).
+
+## Oxanium fonts
 
 Cyberpunk and Terminal include the unmodified Oxanium Medium and SemiBold TTFs, copyright 2019 The Oxanium
 Project Authors, under the SIL Open Font License 1.1. Each font directory includes the complete

@@ -50,6 +50,12 @@ test(
       assert.ok(
         files.includes("maps/super-tile-world/assets/fonts/LICENSE.txt"),
       );
+      assert.ok(files.includes("maps/wildlands/assets/icons/wildlands-tree.svg"));
+      assert.ok(files.includes("maps/wildlands/assets/icons/wildlands-tree-pine.svg"));
+      assert.ok(!files.includes("maps/wildlands/assets/icons/wildlands-forest.pattern.svg"));
+      assert.ok(files.includes("maps/wildlands/assets/icons/wildlands-camp.svg"));
+      assert.ok(files.includes("maps/wildlands/assets/fonts/HyliaSerifBeta-Regular.otf"));
+      assert.ok(files.includes("maps/wildlands/assets/fonts/LICENSE.txt"));
       assert.ok(
         !files.some((file) => /node_modules|^\.env|^test\//u.test(file)),
       );
@@ -81,15 +87,15 @@ test(
       import assert from 'node:assert/strict';
       import {writeFile} from 'node:fs/promises';
       import {createTileflowBuildArtifacts, disposeTileflowBuildArtifacts} from '@tileflow/dev';
-      for (const [name, id, theme, fonts] of [['cyberpunk', 'cyberpunk', 'dark', 2], ['terminal', 'terminal', 'dark', 2], ['superTileWorld', 'super-tile-world', 'light', 3]]) {
+      for (const [name, id, theme, fonts] of [['cyberpunk', 'cyberpunk', 'dark', 2], ['terminal', 'terminal', 'dark', 2], ['superTileWorld', 'super-tile-world', 'light', 3], ['wildlands', 'wildlands', 'parchment', 2]]) {
         await writeFile('tileflow.config.ts',
           "import {" + name + "} from '@tileflow/community-maps'; export default " + name + ";");
         const result = await createTileflowBuildArtifacts({cwd: process.cwd()});
         try {
           assert.ok(result.styles[id][theme].layers.length > 50);
-          assert.equal(result.assets.filter(file => file.fileName.endsWith('.ttf')).length, fonts);
+          assert.equal(result.assets.filter(file => file.fileName.endsWith('.ttf') || file.fileName.endsWith('.otf')).length, fonts);
           assert.ok(result.assets.some(file => file.fileName.endsWith('sprite.png')));
-          assert.ok(result.assets.some(file => file.fileName.startsWith('fonts/licenses/')));
+          if (fonts > 0) assert.ok(result.assets.some(file => file.fileName.startsWith('fonts/licenses/')));
         } finally { await disposeTileflowBuildArtifacts(result); }
       }
       console.log('Packed maps resolve their icons and fonts.');
