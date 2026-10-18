@@ -50,14 +50,14 @@
     "build:wildlands": "tileflow build --config maps/wildlands/tileflow.config.ts --out .tileflow/build/wildlands"
   },
   "peerDependencies": {
-    "@tileflow/core": ">=0.1.0-alpha.30 <0.1.0-beta.0"
+    "@tileflow/core": ">=0.1.0-alpha.35 <0.1.0-beta.0"
   },
   "devDependencies": {
-    "@tileflow/core": "0.1.0-alpha.32",
-    "@tileflow/dev": "0.1.0-alpha.30",
     "@maplibre/maplibre-gl-style-spec": "26.4.2",
+    "@tileflow/core": "0.1.0-alpha.35",
+    "@tileflow/dev": "0.1.0-alpha.32",
     "@types/node": "25.9.2",
-    "tileflow": "0.1.0-alpha.11",
+    "tileflow": "0.1.0-alpha.13",
     "tsup": "8.5.1",
     "tsx": "4.23.12",
     "typescript": "6.0.3"

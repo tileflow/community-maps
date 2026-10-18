@@ -1,11 +1,11 @@
 // Adapted from Tileflow SDK; see NOTICE for origin and modifications.
 import {
   boundaries,
-  buildings,
   defineMap,
   disable,
   expr,
   field,
+  fixed,
   labels,
   land,
   poi,
@@ -13,6 +13,7 @@ import {
   renderPass,
   roads,
   type TileflowDataExpressionInput,
+  type TileflowFixedValue,
   type TileflowLineCap,
   type TileflowLineJoin,
   type TileflowLineStyle,
@@ -21,6 +22,7 @@ import {
   type TileflowRoadClassStyle,
   token,
   transit,
+  vegetation,
   water,
   withRenderStack,
   zoom,
@@ -42,11 +44,14 @@ const cyberpunkPalette = {
   cyanSoft: "#6C8CCB",
   cyanMuted: "#33486F",
   acidGreen: "#2CF58A",
+  destinationInk: "#FFF06A",
+  activityInk: "#FF5CCF",
+  natureInk: "#6CC5AA",
   green: "#168F96",
   halo: "#03050B",
   land: "#09142A",
   labelCulture: "#B69BFF",
-  labelHalo: "#2A405F",
+  labelHalo: "#030A17",
   labelMuted: "#B9CDEF",
   labelWater: "#8EBBFF",
   magenta: "#E82098",
@@ -308,7 +313,6 @@ const cyberpunkPublishedImportanceTier = expr.toNumber(
   expr.coalesce(expr.get(field("importanceTier")), 0),
   0,
 );
-const cyberpunkPublishedTierVariable = expr.var<number>("t");
 const cyberpunkBuildingIsDestination = expr.eq(
   cyberpunkBuildingTone2d,
   "destination",
@@ -317,30 +321,6 @@ const cyberpunkBuildingHasColorFamily = expr.match<string, boolean>(
   cyberpunkBuildingTone2d,
   [{ labels: ["active", "commercial", "destination"], value: true }],
   false,
-);
-const cyberpunkBuildingPublishedTierWithProminence = expr.let(
-  "t",
-  cyberpunkPublishedImportanceTier,
-  expr.case<number>(
-    [
-      {
-        when: expr.all(
-          expr.gte(cyberpunkPublishedTierVariable, 1),
-          expr.lte(cyberpunkPublishedTierVariable, 2),
-          expr.gte(
-            cyberpunkBuildingHeight2d,
-            expr.match<number, number>(
-              cyberpunkPublishedTierVariable,
-              [{ labels: 1, value: 24 }],
-              36,
-            ),
-          ),
-        ),
-        value: expr.add(cyberpunkPublishedTierVariable, 1),
-      },
-    ],
-    cyberpunkPublishedTierVariable,
-  ),
 );
 const cyberpunkBuildingLegacyImportanceTier = expr.case<number>(
   [
@@ -359,71 +339,55 @@ const cyberpunkBuildingLegacyImportanceTier = expr.case<number>(
 const cyberpunkBuildingImportanceTier = expr.case<number>(
   [
     {
-      // Semantics establishes relevance. Physical prominence may add at most one
-      // visual step, while an ordinary tall building is capped at a faint tier 1.
+      // A tall ordinary block must not compete with a mapped destination.
       when: expr.has(field("importanceTier")),
-      value: cyberpunkBuildingPublishedTierWithProminence,
+      value: cyberpunkPublishedImportanceTier,
     },
   ],
   cyberpunkBuildingLegacyImportanceTier,
 );
-const cyberpunkBuildingIsSelectedDestination = cyberpunkBuildingIsDestination;
+const cyberpunkBuildingIsSelectedDestination = expr.all(
+  cyberpunkBuildingIsDestination,
+  expr.gte(cyberpunkBuildingImportanceTier, 3),
+);
 const cyberpunkBuildingGhostFill = expr.case<string>(
   [
-    {
-      when: cyberpunkBuildingIsSelectedDestination,
-      value: expr.step(cyberpunkBuildingImportanceTier, "#0C1528", [
-        [1, "#201E14"],
-        [2, "#302A12"],
-        [3, "#433812"],
-        [4, "#5A4B0E"],
-      ]),
-    },
+    { when: cyberpunkBuildingIsSelectedDestination, value: "#302915" },
+    { when: cyberpunkBuildingIsDestination, value: "#201F20" },
+    { when: cyberpunkBuildingHasColorFamily, value: "#24122D" },
   ],
-  expr.step(cyberpunkBuildingImportanceTier, "#0C1528", [
-    [1, "#29132A"],
-    [2, "#351235"],
-    [3, "#48123F"],
-    [4, "#5B144D"],
-  ]),
+  "#101D30",
+);
+// The volume carries a dark tint; only the footprint contours use neon ink.
+const cyberpunkBuildingReliefMaterial = expr.case<string>(
+  [
+    { when: cyberpunkBuildingIsDestination, value: "#51472E" },
+    { when: cyberpunkBuildingHasColorFamily, value: "#3C2549" },
+  ],
+  "#24354C",
 );
 const cyberpunkBuildingGhostCore = expr.case<string>(
   [
     {
-      when: cyberpunkBuildingIsSelectedDestination,
-      value: expr.step(cyberpunkBuildingImportanceTier, "#45608C", [
-        [1, "#AAA13D"],
-        [2, "#D6CA3D"],
-        [3, "#F3E941"],
-        [4, "#FFF27A"],
-      ]),
+      when: cyberpunkBuildingIsDestination,
+      value: cyberpunkPalette.destinationInk,
     },
-  ],
-  expr.step(cyberpunkBuildingImportanceTier, "#45608C", [
-    [1, "#B64996"],
-    [2, "#D654B5"],
-    [3, "#FF5CCF"],
-    [4, "#FF86DD"],
-  ]),
-);
-const cyberpunkBuildingGhostCoreOpacity = expr.case<number>(
-  [
     {
-      when: cyberpunkBuildingIsSelectedDestination,
-      value: expr.step(cyberpunkBuildingImportanceTier, 0.18, [
-        [1, 0.46],
-        [2, 0.64],
-        [3, 0.82],
-        [4, 0.96],
-      ]),
+      when: cyberpunkBuildingHasColorFamily,
+      value: cyberpunkPalette.activityInk,
     },
   ],
-  expr.step(cyberpunkBuildingImportanceTier, 0.18, [
-    [1, 0.52],
+  "#477AB3",
+);
+const cyberpunkBuildingGhostCoreOpacity = expr.step(
+  cyberpunkBuildingImportanceTier,
+  0.27,
+  [
+    [1, 0.46],
     [2, 0.68],
-    [3, 0.84],
-    [4, 0.96],
-  ]),
+    [3, 0.9],
+    [4, 1],
+  ],
 );
 
 const cyberpunkRoadClass = expr.coalesce(expr.get(field("class")), "");
@@ -452,36 +416,93 @@ const cyberpunkPoiFilterRank = expr.toNumber(
   6,
 );
 const cyberpunkPoiSizeRank = expr.toNumber(expr.get(field("poiSizeRank")), 17);
-const cyberpunkPoiImportanceTier = expr.match<string, number>(
-  cyberpunkPoiCategory,
-  [
-    { labels: "landmark", value: 4 },
-    { labels: "transport", value: 3 },
-    {
-      labels: [
-        "arts-entertainment",
-        "park-nature",
-        "public-services",
-        "sport-leisure",
-      ],
-      value: 2,
-    },
-  ],
-  1,
-);
-const cyberpunkHudPoiImportanceTier = cyberpunkPoiImportanceTier;
 const cyberpunkPoiPlacementPriority = expr.add(
   expr.multiply(cyberpunkPoiFilterRank, 17),
   cyberpunkPoiSizeRank,
 );
-const cyberpunkPoiImportanceColor = expr.match<number, string>(
-  cyberpunkPoiImportanceTier,
+// World publishes broad building tones, without an individual POI/building ID.
+// Keep the destination, activity and green-space families coherent across domains.
+const cyberpunkPoiImportanceColor = expr.match<string, string>(
+  cyberpunkPoiCategory,
   [
-    { labels: 4, value: cyberpunkPalette.yellow },
-    { labels: 3, value: cyberpunkPalette.neonMagenta },
-    { labels: 2, value: cyberpunkPalette.magentaSoft },
+    {
+      labels: [
+        "landmark",
+        "transport",
+        "arts-entertainment",
+        "education",
+        "religion",
+        "medical",
+        "public-services",
+      ],
+      value: cyberpunkPalette.destinationInk,
+    },
+    {
+      labels: ["lodging", "retail", "food-drink"],
+      value: cyberpunkPalette.activityInk,
+    },
+    {
+      labels: ["park-nature", "sport-leisure"],
+      value: cyberpunkPalette.natureInk,
+    },
   ],
-  cyberpunkPalette.cyanSoft,
+  "#9BBAD4",
+);
+const cyberpunkPoiSign = expr.match<string, TileflowFixedValue<string>>(
+  cyberpunkPoiCategory,
+  [
+    {
+      labels: "transport",
+      value: fixed("cyberpunk-sign-transit", {
+        reason: "Original category pictogram shared by Cyberpunk destinations.",
+      }),
+    },
+    {
+      labels: "medical",
+      value: fixed("cyberpunk-sign-medical", {
+        reason: "Original category pictogram shared by Cyberpunk destinations.",
+      }),
+    },
+    {
+      labels: "lodging",
+      value: fixed("cyberpunk-sign-hotel", {
+        reason: "Original category pictogram shared by Cyberpunk destinations.",
+      }),
+    },
+    {
+      labels: ["arts-entertainment", "education", "religion"],
+      value: fixed("cyberpunk-sign-culture", {
+        reason: "Original category pictogram shared by Cyberpunk destinations.",
+      }),
+    },
+    {
+      labels: "food-drink",
+      value: fixed("cyberpunk-sign-food", {
+        reason: "Original category pictogram shared by Cyberpunk destinations.",
+      }),
+    },
+    {
+      labels: "retail",
+      value: fixed("cyberpunk-sign-shop", {
+        reason: "Original category pictogram shared by Cyberpunk destinations.",
+      }),
+    },
+    {
+      labels: ["park-nature", "sport-leisure"],
+      value: fixed("cyberpunk-sign-park", {
+        reason: "Original category pictogram shared by Cyberpunk destinations.",
+      }),
+    },
+    {
+      labels: "landmark",
+      value: fixed("cyberpunk-sign-landmark", {
+        reason: "Original category pictogram shared by Cyberpunk destinations.",
+      }),
+    },
+  ],
+  fixed("cyberpunk-sign-place", {
+    reason: "Original category pictogram shared by Cyberpunk destinations.",
+  }),
 );
 const cyberpunkPoiIsActive = expr.toBoolean(expr.featureState("active"), false);
 
@@ -490,8 +511,8 @@ type WidthStops = readonly (readonly [number, number])[];
 const roadBorderTotalWidth = 1;
 const roadWidthInterpolationBase = 1.5;
 const expresswayWidthScale = 1.06;
-const tunnelBorderDash = [8, 5] as const;
-const tunnelBorderWidth = 1;
+const tunnelBorderDash = [3, 3] as const;
+const tunnelBorderWidth = 0.65;
 const roadClearanceExtraAtZ15 = expr.toNumber(
   expr.coalesce(expr.get(field("circularClearanceExtraAtZoom15")), 0),
   0,
@@ -724,9 +745,10 @@ function roadWidth(
 
 function roadCasingStrokeWidth() {
   return zoom.linear([
-    [15, 0],
-    [15.5, 0.5],
-    [22, 0.5],
+    [14, 0.3],
+    [15.5, 0.7],
+    [18, 0.85],
+    [22, 1.2],
   ]);
 }
 
@@ -749,7 +771,7 @@ function cyberpunkRoadStyle(
   } = {},
 ): TileflowRoadClassStyle {
   const {
-    casingMinZoom = 15,
+    casingMinZoom = 14,
     edgeOpacity = 1,
     minZoom,
     neon = false,
@@ -764,7 +786,11 @@ function cyberpunkRoadStyle(
   const fill = {
     ...zoomRange,
     cap: roadLineCap,
-    color: cyberpunkPalette.road,
+    color: zoom.linear([
+      [8, neon ? "#0A182B" : "#14283D"],
+      [13, neon ? "#091628" : "#1C3449"],
+      [15, cyberpunkPalette.road],
+    ]),
     join: roadLineJoin,
     opacity,
     width: roadWidth(widths, 1, false, false, rampWidths),
@@ -784,7 +810,17 @@ function cyberpunkRoadStyle(
   return {
     surface: { casing, fill },
     bridge: {
-      casing,
+      casing: {
+        ...casing,
+        blur: 0.15,
+        opacity: Math.min(1, edgeOpacity + 0.15),
+        width: zoom.linear([
+          [13, 0.45],
+          [16, 1],
+          [18, 1.3],
+          [22, 1.8],
+        ]),
+      },
       fill: {
         ...fill,
         color: cyberpunkPalette.roadBridge,
@@ -795,9 +831,11 @@ function cyberpunkRoadStyle(
           casing: {
             ...casing,
             color: edgeColor,
+            cap: "butt",
+            blur: 0,
             dash: tunnelBorderDash,
             gapWidth: fill.width,
-            opacity: edgeOpacity,
+            opacity: edgeOpacity * 0.45,
             width: tunnelRoadCasingWidth,
           },
           fill: {
@@ -906,9 +944,9 @@ const contextualPathLineWidth = expr.interpolate<number>(
     [15, expr.case<number>([{ when: unpavedPathCondition, value: 0.75 }], 1)],
     [16, expr.case<number>([{ when: unpavedPathCondition, value: 1 }], 1.5)],
     [17, expr.case<number>([{ when: unpavedPathCondition, value: 1.4 }], 3)],
-    [18, expr.case<number>([{ when: unpavedPathCondition, value: 2 }], 6)],
-    [19, expr.case<number>([{ when: unpavedPathCondition, value: 3.7 }], 12)],
-    [20, expr.case<number>([{ when: unpavedPathCondition, value: 7.5 }], 22)],
+    [18, expr.case<number>([{ when: unpavedPathCondition, value: 2 }], 4)],
+    [19, expr.case<number>([{ when: unpavedPathCondition, value: 3.7 }], 8)],
+    [20, expr.case<number>([{ when: unpavedPathCondition, value: 7.5 }], 16)],
     [22, expr.case<number>([{ when: unpavedPathCondition, value: 20 }], 60)],
   ],
 );
@@ -932,13 +970,13 @@ const contextualPathClasses = [
 const cyberpunkOverviewLandcoverColor = expr.match<string, string>(
   expr.get(field("class")),
   [
-    { labels: "barren", value: "#0A2143" },
-    { labels: "crop", value: "#0B2C4A" },
-    { labels: "grass", value: "#173A36" },
-    { labels: "shrub", value: "#163D38" },
-    { labels: "snow", value: "#1B447A" },
-    { labels: "trees", value: "#11352F" },
-    { labels: "urban", value: "#292D4B" },
+    { labels: "barren", value: "#14233C" },
+    { labels: "crop", value: "#142B3B" },
+    { labels: "grass", value: "#143037" },
+    { labels: "shrub", value: "#16313A" },
+    { labels: "snow", value: "#29465E" },
+    { labels: "trees", value: "#0E2B32" },
+    { labels: "urban", value: "#443052" },
   ],
   "rgba(0, 0, 0, 0)",
 );
@@ -957,6 +995,14 @@ const cyberpunkPrimaryPlaceLabelIds = [
   "labels.places.country",
   "labels.places.city",
 ] as const;
+
+// Oxanium's packaged alphabet is Latin; use the producer's transliteration when supplied.
+const cyberpunkPlaceName = expr.coalesce(
+  expr.get(field("nameLatin")),
+  expr.get(field("name")),
+  expr.get(field("nameEnglish")),
+  "",
+);
 
 const cyberpunkSecondaryPlaceLabelIds = [
   "labels.places.other",
@@ -992,11 +1038,31 @@ function cyberpunkLabelRenderStack(): TileflowNamedRenderStack {
             requirements: ["roads"],
             target,
             style: {
+              spacing: zoom.linear([
+                [12, 350],
+                [16, 500],
+                [20, 800],
+              ]),
               text: {
-                haloWidth: 1.6,
-                size: expr.interpolate({ kind: "linear" }, expr.zoom(), [
+                haloWidth: 0.9,
+                color:
+                  target.endsWith("minor") || target.endsWith("service")
+                    ? "#8DA9C6"
+                    : "#C9E4F7",
+                size: zoom.linear([
                   [10, 9],
-                  [16, 13],
+                  [
+                    16,
+                    target.endsWith("minor") || target.endsWith("service")
+                      ? 10.5
+                      : 12,
+                  ],
+                  [
+                    19,
+                    target.endsWith("minor") || target.endsWith("service")
+                      ? 12
+                      : 14,
+                  ],
                 ]),
               },
             },
@@ -1013,7 +1079,60 @@ function cyberpunkLabelRenderStack(): TileflowNamedRenderStack {
           refineRenderTarget({
             renderer: "symbol",
             target,
-            style: { text: { haloWidth: 1.4 } },
+            style: target.endsWith("country")
+              ? {
+                  maxZoom: 5,
+                  text: {
+                    field: cyberpunkPlaceName,
+                    haloWidth: 1.5,
+                    color: "#91CEDF",
+                    letterSpacing: 0.18,
+                    size: zoom.linear([
+                      [1, 10],
+                      [3, 13],
+                      [5, 16],
+                    ]),
+                    opacity: zoom.linear([
+                      [1, 0.9],
+                      [3.5, 0.9],
+                      [5, 0],
+                    ]),
+                  },
+                }
+              : {
+                  text: {
+                    field: cyberpunkPlaceName,
+                    haloWidth: 1.6,
+                    haloBlur: 0.4,
+                    anchor: "left",
+                    offset: [0.7, 0],
+                    color: expr.case<string>(
+                      [
+                        {
+                          when: expr.eq(
+                            expr.toNumber(expr.get(field("capital")), 0),
+                            2,
+                          ),
+                          value: "#FFF0A6",
+                        },
+                      ],
+                      "#D7F4FF",
+                    ),
+                    letterSpacing: 0.1,
+                    size: zoom.linear([
+                      [2, 10],
+                      [5, 12],
+                      [9, 16],
+                      [12, 19],
+                    ]),
+                    opacity: zoom.linear([
+                      [2, 0.85],
+                      [6, 1],
+                      [12, 1],
+                      [14.5, 0],
+                    ]),
+                  },
+                },
           }),
         ] as const,
     ),
@@ -1028,7 +1147,53 @@ function cyberpunkLabelRenderStack(): TileflowNamedRenderStack {
             renderer: "symbol",
             target,
             style: {
-              text: { color: cyberpunkPalette.labelMuted, haloWidth: 1.1 },
+              ...(target.endsWith("state") ? { maxZoom: 8 } : {}),
+              text: {
+                field: cyberpunkPlaceName,
+                color: target.endsWith("continent")
+                  ? "#6299BA"
+                  : target.endsWith("state")
+                    ? "#8394B4"
+                    : cyberpunkPalette.labelMuted,
+                ...(target.endsWith("continent")
+                  ? {
+                      letterSpacing: 0.28,
+                      size: zoom.linear([
+                        [0, 12],
+                        [2, 17],
+                      ]),
+                    }
+                  : {}),
+                ...(target.endsWith("state")
+                  ? {
+                      letterSpacing: 0.15,
+                      size: 10,
+                      opacity: zoom.linear([
+                        [4, 0.5],
+                        [6, 0.7],
+                        [8, 0],
+                      ]),
+                    }
+                  : {}),
+                haloWidth: 1.1,
+                ...(target.endsWith("neighborhood")
+                  ? {
+                      color: "#AFD7E6",
+                      letterSpacing: 0.2,
+                      size: zoom.linear([
+                        [11, 11],
+                        [14, 15],
+                        [16, 17],
+                      ]),
+                      opacity: zoom.linear([
+                        [11, 0.65],
+                        [14, 0.95],
+                        [16, 0.5],
+                        [17, 0],
+                      ]),
+                    }
+                  : {}),
+              },
             },
           }),
         ] as const,
@@ -1036,22 +1201,113 @@ function cyberpunkLabelRenderStack(): TileflowNamedRenderStack {
   ]);
 }
 
-function cyberpunkPoiLabelRenderStack(): TileflowNamedRenderStack {
-  return Object.fromEntries(
-    (["poi.transport.label", "poi.arts-entertainment.label"] as const).map(
-      (target) => [
-        cyberpunkRenderOperationName(
-          "poiLabel",
-          target.split(".").at(-2) ?? "",
-        ),
-        refineRenderTarget({
-          renderer: "symbol",
-          target,
-          style: { text: { haloWidth: 1.2 } },
-        }),
-      ],
-    ),
+function cyberpunkSettlementRenderStack(): TileflowNamedRenderStack {
+  const cityRank = (rank: number): TileflowRenderSelector => ({
+    kind: "all",
+    selectors: [
+      { kind: "geometry", geometry: "point" },
+      { kind: "compare", field: "class", operator: "eq", value: "city" },
+      {
+        kind: "any",
+        selectors: [
+          {
+            kind: "compare",
+            field: "capital",
+            operator: "eq",
+            value: 2,
+            coerce: "number",
+            fallback: 0,
+          },
+          {
+            kind: "all",
+            selectors: [
+              { kind: "has", field: "rank" },
+              {
+                kind: "compare",
+                field: "rank",
+                operator: "lte",
+                value: rank,
+                coerce: "number",
+                fallback: 99,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+  const selector: TileflowRenderSelector = {
+    kind: "step",
+    fallback: cityRank(2),
+    stops: [
+      { zoom: 5, selector: cityRank(4) },
+      { zoom: 7, selector: cityRank(5) },
+    ],
+  };
+  const cityColor = expr.case<string>(
+    [
+      {
+        when: expr.eq(expr.toNumber(expr.get(field("capital")), 0), 2),
+        value: "#FFF0A6",
+      },
+    ],
+    "#64D8EA",
   );
+  return {
+    settlementHalo: renderPass({
+      feature: "place",
+      renderer: "circle",
+      placement: "below-labels",
+      selector,
+      style: {
+        minZoom: 3,
+        maxZoom: 12,
+        color: cityColor,
+        blur: 0.8,
+        radius: zoom.linear([
+          [3, 4],
+          [7, 8],
+          [10, 10],
+        ]),
+        opacity: zoom.linear([
+          [3, 0],
+          [4, 0.16],
+          [9, 0.16],
+          [12, 0],
+        ]),
+      },
+    }),
+    settlementNode: renderPass({
+      feature: "place",
+      renderer: "circle",
+      placement: { above: "labels.render.settlementHalo" },
+      selector,
+      style: {
+        minZoom: 3,
+        maxZoom: 12,
+        color: "#081426",
+        strokeColor: cityColor,
+        strokeWidth: 1.1,
+        strokeOpacity: zoom.linear([
+          [3, 0],
+          [4, 0.9],
+          [10, 0.9],
+          [12, 0],
+        ]),
+        radius: zoom.linear([
+          [3, 1.6],
+          [7, 2.4],
+          [10, 3],
+        ]),
+        opacity: zoom.linear([
+          [3, 0],
+          [4, 1],
+          [10, 1],
+          [12, 0],
+        ]),
+      },
+    }),
+  };
 }
 
 function cyberpunkPathRenderStack(): TileflowNamedRenderStack {
@@ -1064,7 +1320,7 @@ function cyberpunkPathRenderStack(): TileflowNamedRenderStack {
             renderer: "line",
             target: `roads.classes.${roadClass}.${structure}.fill`,
             style: {
-              color: roadClass === "steps" ? "#06152E" : cyberpunkPalette.road,
+              color: roadClass === "steps" ? "#41687B" : "#173742",
               ...(roadClass === "steps" ? { dash: [0.18, 0.15] as const } : {}),
               width: contextualPathLineWidth,
             },
@@ -1076,7 +1332,8 @@ function cyberpunkPathRenderStack(): TileflowNamedRenderStack {
             renderer: "line",
             target: `roads.classes.${roadClass}.${structure}.casing`,
             style: {
-              color: cyberpunkPalette.roadCasing,
+              color: "#285366",
+              opacity: 0.6,
               gapWidth: roadClass === "steps" ? 0 : contextualPathLineWidth,
               width:
                 roadClass === "steps"
@@ -1091,10 +1348,11 @@ function cyberpunkPathRenderStack(): TileflowNamedRenderStack {
 }
 
 function cyberpunkRoadImportanceSelector(
-  minimum: 1 | 2 | 3,
+  minimum: 1 | 2 | 3 | 4,
   unobstructed: boolean,
 ): TileflowRenderSelector {
   const legacyClasses = {
+    4: ["motorway", "trunk"],
     1: ["motorway", "trunk", "primary", "secondary", "tertiary"],
     2: ["motorway", "trunk", "primary", "secondary"],
     3: ["motorway", "trunk", "primary"],
@@ -1172,7 +1430,7 @@ function cyberpunkPrincipalRoadRenderStack(): TileflowNamedRenderStack {
       { labels: 4, value: 1 },
       { labels: 3, value: 0.9 },
       { labels: 2, value: 0.72 },
-      { labels: 1, value: 0.48 },
+      { labels: 1, value: 0.7 },
     ],
     0,
   );
@@ -1182,7 +1440,7 @@ function cyberpunkPrincipalRoadRenderStack(): TileflowNamedRenderStack {
       { labels: 4, value: 0.94 },
       { labels: 3, value: 0.82 },
       { labels: 2, value: 0.62 },
-      { labels: 1, value: 0.32 },
+      { labels: 1, value: 0.58 },
     ],
     0,
   );
@@ -1193,12 +1451,34 @@ function cyberpunkPrincipalRoadRenderStack(): TileflowNamedRenderStack {
     ],
     1,
   );
+  // National routes first; secondary roads and local avenues enter as the map opens up.
+  const overviewSelector = (
+    minimum: 1 | 2 | 3,
+    unobstructed: boolean,
+  ): TileflowRenderSelector => ({
+    kind: "step",
+    fallback: cyberpunkRoadImportanceSelector(4, unobstructed),
+    stops: [
+      { zoom: 6, selector: cyberpunkRoadImportanceSelector(3, unobstructed) },
+      {
+        zoom: 9,
+        selector: cyberpunkRoadImportanceSelector(
+          Math.max(2, minimum) as 2 | 3,
+          unobstructed,
+        ),
+      },
+      {
+        zoom: 12,
+        selector: cyberpunkRoadImportanceSelector(minimum, unobstructed),
+      },
+    ],
+  });
   return {
     principalNeonAura: renderPass({
       placement: { above: "roads.classes.motorway.surface.fill" },
       feature: "road",
       renderer: "line",
-      selector: cyberpunkRoadImportanceSelector(3, true),
+      selector: overviewSelector(3, true),
       style: {
         blur: expr.interpolate({ kind: "linear" }, expr.zoom(), [
           [8, 2],
@@ -1240,7 +1520,7 @@ function cyberpunkPrincipalRoadRenderStack(): TileflowNamedRenderStack {
       placement: { above: "roads.render.principalNeonAura" },
       feature: "road",
       renderer: "line",
-      selector: cyberpunkRoadImportanceSelector(2, true),
+      selector: overviewSelector(1, true),
       style: {
         blur: expr.interpolate({ kind: "linear" }, expr.zoom(), [
           [6, 0.8],
@@ -1261,6 +1541,7 @@ function cyberpunkPrincipalRoadRenderStack(): TileflowNamedRenderStack {
             { labels: 4, value: 0.54 },
             { labels: 3, value: 0.42 },
             { labels: 2, value: 0.26 },
+            { labels: 1, value: 0.16 },
           ],
           0,
         ),
@@ -1284,7 +1565,7 @@ function cyberpunkPrincipalRoadRenderStack(): TileflowNamedRenderStack {
       placement: { above: "roads.render.principalNeonGlow" },
       feature: "road",
       renderer: "line",
-      selector: cyberpunkRoadImportanceSelector(1, false),
+      selector: overviewSelector(1, false),
       style: {
         blur: expr.interpolate({ kind: "linear" }, expr.zoom(), [
           [3, 0.2],
@@ -1303,11 +1584,11 @@ function cyberpunkPrincipalRoadRenderStack(): TileflowNamedRenderStack {
           expr.zoom(),
           [
             [3, 0],
-            [4, 0.24],
-            [8, 0.48],
-            [10, 0.6],
-            [12, expr.multiply(0.7, roadWidthScale)],
-            [15, expr.multiply(2, roadWidthScale)],
+            [4, 0.4],
+            [8, expr.multiply(0.95, roadWidthScale)],
+            [10, expr.multiply(1.2, roadWidthScale)],
+            [12, expr.multiply(1.4, roadWidthScale)],
+            [15, expr.multiply(2.4, roadWidthScale)],
             [16, expr.multiply(3, roadWidthScale)],
             [18, expr.multiply(5, roadWidthScale)],
             [22, expr.multiply(15, roadWidthScale)],
@@ -1321,206 +1602,165 @@ function cyberpunkPrincipalRoadRenderStack(): TileflowNamedRenderStack {
 function cyberpunkBuildingImportanceSelector(
   minimum: 2 | 3,
 ): TileflowRenderSelector {
-  const hasPublishedTier = { kind: "has", field: "importanceTier" } as const;
-  const heightAtLeast = (value: number): TileflowRenderSelector => ({
-    kind: "compare",
-    field: "renderHeight",
-    operator: "gte",
-    value,
-    coerce: "number",
-    fallback: 0,
-  });
-  const publishedBranch: TileflowRenderSelector = {
-    kind: "all",
-    selectors: [
-      hasPublishedTier,
-      {
-        kind: "any",
-        selectors:
-          minimum === 3
-            ? [
-                {
-                  kind: "compare",
-                  field: "importanceTier",
-                  operator: "gte",
-                  value: 3,
-                  coerce: "number",
-                  fallback: 0,
-                },
-                {
-                  kind: "all",
-                  selectors: [
-                    {
-                      kind: "compare",
-                      field: "importanceTier",
-                      operator: "eq",
-                      value: 2,
-                      coerce: "number",
-                      fallback: 0,
-                    },
-                    heightAtLeast(36),
-                  ],
-                },
-              ]
-            : [
-                {
-                  kind: "compare",
-                  field: "importanceTier",
-                  operator: "gte",
-                  value: 2,
-                  coerce: "number",
-                  fallback: 0,
-                },
-                {
-                  kind: "all",
-                  selectors: [
-                    {
-                      kind: "compare",
-                      field: "importanceTier",
-                      operator: "eq",
-                      value: 1,
-                      coerce: "number",
-                      fallback: 0,
-                    },
-                    heightAtLeast(24),
-                  ],
-                },
-              ],
-      },
-    ],
-  };
-  const legacyBranch: TileflowRenderSelector = {
-    kind: "all",
-    selectors: [
-      { kind: "not", selector: hasPublishedTier },
-      ...(minimum === 3
-        ? ([
-            {
-              kind: "compare",
-              field: "buildingTone",
-              operator: "eq",
-              value: "destination",
-              fallback: "",
-            },
-            heightAtLeast(36),
-          ] satisfies TileflowRenderSelector[])
-        : ([
-            {
-              kind: "any",
-              selectors: [
-                {
-                  kind: "compare",
-                  field: "buildingTone",
-                  operator: "eq",
-                  value: "destination",
-                  fallback: "",
-                },
-                {
-                  kind: "all",
-                  selectors: [
-                    {
-                      kind: "in",
-                      field: "buildingTone",
-                      values: ["active", "commercial", "destination"],
-                      fallback: "",
-                    },
-                    heightAtLeast(24),
-                  ],
-                },
-              ],
-            },
-          ] satisfies TileflowRenderSelector[])),
-    ],
-  };
   return {
     kind: "all",
     selectors: [
       { kind: "geometry", geometry: "polygon" },
-      { kind: "any", selectors: [publishedBranch, legacyBranch] },
+      {
+        kind: "any",
+        selectors: [
+          {
+            kind: "all",
+            selectors: [
+              { kind: "has", field: "importanceTier" },
+              {
+                kind: "compare",
+                field: "importanceTier",
+                operator: "gte",
+                value: minimum,
+                coerce: "number",
+                fallback: 0,
+              },
+            ],
+          },
+          {
+            kind: "all",
+            selectors: [
+              {
+                kind: "not",
+                selector: { kind: "has", field: "importanceTier" },
+              },
+              {
+                kind: "compare",
+                field: "buildingTone",
+                operator: "eq",
+                value: "destination",
+                fallback: "",
+              },
+              ...(minimum === 3
+                ? [
+                    {
+                      kind: "compare",
+                      field: "renderHeight",
+                      operator: "gte",
+                      value: 36,
+                      coerce: "number",
+                      fallback: 0,
+                    } as const,
+                  ]
+                : []),
+            ],
+          },
+        ],
+      },
     ],
   };
 }
 
 function cyberpunkBuildingRenderStack(): TileflowNamedRenderStack {
-  const strongSelector = cyberpunkBuildingImportanceSelector(3);
   const activitySelector = cyberpunkBuildingImportanceSelector(2);
   return {
-    circuitFill: renderPass({
-      placement: { above: "buildings.flat.fill" },
+    cityFootprints: renderPass({
+      placement: "above-roads",
       feature: "building",
       renderer: "fill",
-      selector: strongSelector,
+      selector: { kind: "geometry", geometry: "polygon" },
+      style: {
+        minZoom: 14,
+        color: cyberpunkBuildingGhostFill,
+        opacity: zoom.linear([
+          [14, 0],
+          [15, 0.56],
+        ]),
+      },
+    }),
+    cityOutline: renderPass({
+      placement: { above: "land.render.cityFootprints" },
+      feature: "building",
+      renderer: "line",
+      selector: { kind: "geometry", geometry: "polygon" },
+      style: {
+        minZoom: 14,
+        color: cyberpunkBuildingGhostCore,
+        opacity: cyberpunkBuildingGhostCoreOpacity,
+        width: zoom.linear([
+          [14, 0.25],
+          [15, 0.55],
+          [16, 0.75],
+          [18, 0.9],
+          [22, 1.8],
+        ]),
+      },
+    }),
+    cityRelief: renderPass({
+      placement: "above-buildings",
+      feature: "building",
+      renderer: "extrusion",
+      selector: {
+        kind: "all",
+        selectors: [
+          { kind: "geometry", geometry: "polygon" },
+          {
+            kind: "compare",
+            field: "hide3d",
+            operator: "ne",
+            value: 1,
+            coerce: "number",
+            fallback: 0,
+          },
+        ],
+      },
       style: {
         minZoom: 15,
-        opacity: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-          [15, 0],
-          [
-            15.75,
-            expr.match<number, number>(
-              cyberpunkBuildingImportanceTier,
-              [
-                { labels: 4, value: 0.28 },
-                { labels: 3, value: 0.16 },
-              ],
-              0,
-            ),
-          ],
-        ]),
-        pattern: "cyberpunk-circuit",
+        visibilityGroup: "building",
+        // Low relief with enough wall depth to remain readable at neighbourhood zooms.
+        height: expr.min(
+          14,
+          expr.max(4, expr.multiply(cyberpunkBuildingHeight2d, 0.32)),
+        ),
+        base: 0,
+        color: cyberpunkBuildingReliefMaterial,
+        opacity: 0.42,
+        verticalGradient: true,
       },
     }),
     ghostAura: renderPass({
-      placement: { above: "buildings.render.circuitFill" },
+      placement: { above: "land.render.cityOutline" },
       feature: "building",
       renderer: "line",
-      selector: strongSelector,
+      selector: activitySelector,
       style: {
-        blur: 0.8,
+        blur: 3,
         cap: "round",
-        color: expr.case<string>(
-          [
-            {
-              when: cyberpunkBuildingIsSelectedDestination,
-              value: cyberpunkPalette.yellow,
-            },
-          ],
-          cyberpunkPalette.neonMagenta,
-        ),
+        color: cyberpunkBuildingGhostCore,
         join: "round",
         minZoom: 15,
         opacity: expr.match<number, number>(
           cyberpunkBuildingImportanceTier,
           [
-            { labels: 4, value: 0.22 },
-            { labels: 3, value: 0.13 },
+            { labels: 4, value: 0.42 },
+            { labels: 3, value: 0.23 },
+            { labels: 2, value: 0.2 },
           ],
           0,
         ),
         width: expr.interpolate({ kind: "linear" }, expr.zoom(), [
           [15, 3],
-          [16, 4],
-          [18, 6],
-          [22, 10],
+          [16, 6],
+          [18, 9],
+          [22, 18],
         ]),
       },
     }),
     ghostGlow: renderPass({
-      placement: { above: "buildings.render.ghostAura" },
+      placement: { above: "land.render.ghostAura" },
       feature: "building",
       renderer: "line",
       selector: activitySelector,
       style: {
         blur: 0.05,
         cap: "round",
-        color: expr.case<string>(
-          [
-            {
-              when: cyberpunkBuildingIsSelectedDestination,
-              value: cyberpunkPalette.yellow,
-            },
-          ],
-          cyberpunkPalette.neonMagenta,
-        ),
+        color: cyberpunkBuildingGhostCore,
         gapWidth: expr.interpolate({ kind: "linear" }, expr.zoom(), [
           [15, 0.7],
           [16, 1.1],
@@ -1538,7 +1778,7 @@ function cyberpunkBuildingRenderStack(): TileflowNamedRenderStack {
                 [
                   { labels: 4, value: 0.62 },
                   { labels: 3, value: 0.44 },
-                  { labels: 2, value: 0.24 },
+                  { labels: 2, value: 0.23 },
                 ],
                 0,
               ),
@@ -1547,9 +1787,9 @@ function cyberpunkBuildingRenderStack(): TileflowNamedRenderStack {
           expr.match<number, number>(
             cyberpunkBuildingImportanceTier,
             [
-              { labels: 4, value: 0.64 },
-              { labels: 3, value: 0.48 },
-              { labels: 2, value: 0.28 },
+              { labels: 4, value: 0.56 },
+              { labels: 3, value: 0.42 },
+              { labels: 2, value: 0.2 },
             ],
             0,
           ),
@@ -1562,52 +1802,14 @@ function cyberpunkBuildingRenderStack(): TileflowNamedRenderStack {
         ]),
       },
     }),
-    signalTrace: renderPass({
-      placement: { above: "buildings.render.ghostGlow" },
-      feature: "building",
-      renderer: "line",
-      selector: strongSelector,
-      style: {
-        blur: 0,
-        cap: "butt",
-        color: expr.case<string>(
-          [{ when: cyberpunkBuildingIsSelectedDestination, value: "#FFF7B2" }],
-          "#FFF4FB",
-        ),
-        dash: [0.45, 1.25],
-        join: "round",
-        minZoom: 15,
-        offset: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-          [15.5, -1],
-          [18, -1.8],
-          [22, -4],
-        ]),
-        opacity: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-          [15, 0],
-          [
-            15.75,
-            expr.match<number, number>(
-              cyberpunkBuildingImportanceTier,
-              [
-                { labels: 4, value: 0.62 },
-                { labels: 3, value: 0.4 },
-              ],
-              0,
-            ),
-          ],
-        ]),
-        width: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-          [15.5, 0.55],
-          [18, 0.9],
-          [22, 1.8],
-        ]),
-      },
-    }),
   };
 }
 
-function cyberpunkDestinationRenderStack(): TileflowNamedRenderStack {
-  const hudPoiSelector = {
+function cyberpunkPoiSelector(
+  maxRank: number,
+  maxSize: number,
+): TileflowRenderSelector {
+  return {
     kind: "all",
     selectors: [
       { kind: "geometry", geometry: "point" },
@@ -1624,7 +1826,7 @@ function cyberpunkDestinationRenderStack(): TileflowNamedRenderStack {
         kind: "compare",
         field: "poiFilterRank",
         operator: "lte",
-        value: 2,
+        value: maxRank,
         coerce: "number",
         fallback: 6,
       },
@@ -1641,181 +1843,196 @@ function cyberpunkDestinationRenderStack(): TileflowNamedRenderStack {
         kind: "compare",
         field: "poiSizeRank",
         operator: "lte",
-        value: 16,
+        value: maxSize,
         coerce: "number",
         fallback: 17,
       },
     ],
-  } as const satisfies TileflowRenderSelector;
-  const beaconScale = expr.match<number, number>(
-    cyberpunkPoiImportanceTier,
-    [
-      { labels: 4, value: 1.4 },
-      { labels: 3, value: 1.2 },
-      { labels: 2, value: 1 },
-      { labels: 1, value: 0.78 },
-    ],
-    0,
-  );
-  return {
-    destinationScanRing: renderPass({
-      placement: { below: "poi.transport.label" },
-      feature: "poi",
-      renderer: "circle",
-      selector: hudPoiSelector,
-      style: {
-        color: "rgba(0, 0, 0, 0)",
-        minZoom: 15,
-        priority: cyberpunkPoiPlacementPriority,
-        radius: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-          [15, 6],
-          [16, 8],
-          [18, 14],
-          [22, 24],
-        ]),
-        strokeColor: expr.case<string>(
-          [{ when: cyberpunkPoiIsActive, value: cyberpunkPalette.acidGreen }],
-          expr.match<number, string>(
-            cyberpunkHudPoiImportanceTier,
-            [
-              { labels: 4, value: cyberpunkPalette.yellow },
-              { labels: 3, value: cyberpunkPalette.neonMagenta },
+  };
+}
+
+function cyberpunkDestinationRenderStack(): TileflowNamedRenderStack {
+  // City scale shows anchors; local destinations enter only as streets separate.
+  const cityAnchor: TileflowRenderSelector = {
+    kind: "all",
+    selectors: [
+      cyberpunkPoiSelector(1, 16),
+      {
+        kind: "any",
+        selectors: [
+          {
+            kind: "compare",
+            field: "poiCategory",
+            operator: "eq",
+            value: "transport",
+          },
+          {
+            kind: "all",
+            selectors: [
+              {
+                kind: "in",
+                field: "poiCategory",
+                values: ["landmark", "arts-entertainment", "park-nature"],
+              },
+              {
+                kind: "compare",
+                field: "poiSizeRank",
+                operator: "lte",
+                value: 8,
+                coerce: "number",
+                fallback: 17,
+              },
             ],
-            cyberpunkPalette.neonCyan,
-          ),
-        ),
-        strokeOpacity: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-          [15, 0],
-          [
-            16,
-            expr.case<number>(
-              [{ when: cyberpunkPoiIsActive, value: 1 }],
-              expr.match<number, number>(
-                cyberpunkHudPoiImportanceTier,
-                [
-                  { labels: 4, value: 0.7 },
-                  { labels: 3, value: 0.52 },
-                ],
-                0.28,
-              ),
-            ),
-          ],
-        ]),
-        strokeWidth: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-          [15, 0.5],
-          [18, 1],
-          [22, 1.6],
-        ]),
+          },
+        ],
       },
-    }),
-    destinationBeaconCore: renderPass({
-      placement: { above: "poi.render.destinationScanRing" },
+    ],
+  };
+  const hudPoiSelector: TileflowRenderSelector = {
+    kind: "step",
+    fallback: cityAnchor,
+    stops: [
+      {
+        zoom: 15.5,
+        selector: {
+          kind: "any",
+          selectors: [cyberpunkPoiSelector(1, 16), cyberpunkPoiSelector(2, 12)],
+        },
+      },
+      { zoom: 17, selector: cyberpunkPoiSelector(2, 16) },
+    ],
+  };
+  const lightSelector: TileflowRenderSelector = {
+    kind: "all",
+    selectors: [
+      cyberpunkPoiSelector(1, 16),
+      {
+        kind: "any",
+        selectors: [
+          {
+            kind: "compare",
+            field: "poiCategory",
+            operator: "eq",
+            value: "transport",
+          },
+          {
+            kind: "all",
+            selectors: [
+              {
+                kind: "in",
+                field: "poiCategory",
+                values: ["landmark", "arts-entertainment", "medical"],
+              },
+              {
+                kind: "compare",
+                field: "poiSizeRank",
+                operator: "lte",
+                value: 6,
+                coerce: "number",
+                fallback: 17,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  return {
+    destinationLightPool: renderPass({
+      placement: "below-roads",
       feature: "poi",
       renderer: "circle",
-      selector: hudPoiSelector,
+      selector: lightSelector,
       style: {
-        blur: expr.match<number, number>(
-          cyberpunkPoiImportanceTier,
-          [
-            { labels: 4, value: 0.14 },
-            { labels: 3, value: 0.1 },
-            { labels: 2, value: 0.06 },
-          ],
-          0,
-        ),
-        color: cyberpunkPoiImportanceColor,
         minZoom: 14,
-        opacity: expr.match<number, number>(
-          cyberpunkPoiImportanceTier,
-          [
-            { labels: 4, value: 0.96 },
-            { labels: 3, value: 0.9 },
-            { labels: 2, value: 0.74 },
-            { labels: 1, value: 0.46 },
-          ],
-          0,
-        ),
+        color: cyberpunkPoiImportanceColor,
+        blur: 1,
+        radius: zoom.linear([
+          [14, 12],
+          [16, 36],
+          [18, 72],
+          [20, 100],
+        ]),
+        opacity: zoom.linear([
+          [14, 0],
+          [15, 0.13],
+          [17, 0.2],
+          [20, 0.14],
+        ]),
         pitchAlignment: "map",
         pitchScale: "map",
-        priority: cyberpunkPoiPlacementPriority,
-        radius: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-          [14, expr.multiply(1.25, beaconScale)],
-          [16, expr.multiply(2.5, beaconScale)],
-          [18, expr.multiply(4.5, beaconScale)],
-          [22, expr.multiply(9, beaconScale)],
-        ]),
-        strokeColor: cyberpunkPalette.halo,
-        strokeOpacity: 0.9,
-        strokeWidth: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-          [14, 0.5],
-          [18, 1],
-          [22, 2],
-        ]),
       },
     }),
-    destinationBrackets: renderPass({
-      placement: { above: "poi.arts-entertainment.label" },
+    destinationScanRing: renderPass({
+      placement: "below-labels",
+      feature: "poi",
+      renderer: "circle",
+      selector: hudPoiSelector,
+      style: {
+        minZoom: 13,
+        color: "rgba(0, 0, 0, 0)",
+        radius: zoom.linear([
+          [13, 9],
+          [17, 14],
+          [20, 18],
+        ]),
+        strokeColor: cyberpunkPoiImportanceColor,
+        strokeOpacity: expr.case(
+          [{ when: cyberpunkPoiIsActive, value: 0.9 }],
+          0,
+        ),
+        strokeWidth: 1,
+      },
+    }),
+    destinationSign: renderPass({
+      placement: "below-labels",
       feature: "poi",
       renderer: "symbol",
       selector: hudPoiSelector,
       style: {
+        minZoom: 13,
+        priority: expr.subtract(0, cyberpunkPoiPlacementPriority),
         icon: {
+          image: cyberpunkPoiSign,
           allowOverlap: false,
-          image: "cyberpunk-target-brackets",
           ignorePlacement: false,
-          opacity: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-            [15, 0],
-            [
-              16,
-              expr.match<number, number>(
-                cyberpunkHudPoiImportanceTier,
-                [
-                  { labels: 4, value: 0.9 },
-                  { labels: 3, value: 0.74 },
-                ],
-                0.52,
-              ),
-            ],
+          padding: 7,
+          optional: false,
+          size: zoom.linear([
+            [13, 0.68],
+            [16, 0.82],
+            [18, 0.95],
+            [21, 1.1],
           ]),
-          padding: 4,
-          size: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-            [15, 0.72],
-            [16, 1],
-            [18, 1.35],
-            [22, 1.75],
+          opacity: zoom.linear([
+            [13, 0.65],
+            [15, 0.95],
           ]),
         },
-        minZoom: 15,
-        priority: expr.subtract(0, cyberpunkPoiPlacementPriority),
         text: {
-          allowOverlap: false,
-          anchor: "top",
-          color: expr.case<string>(
-            [{ when: cyberpunkPoiIsActive, value: cyberpunkPalette.acidGreen }],
-            expr.match<number, string>(
-              cyberpunkHudPoiImportanceTier,
-              [
-                { labels: 4, value: cyberpunkPalette.yellow },
-                { labels: 3, value: cyberpunkPalette.neonMagenta },
-              ],
-              cyberpunkPalette.neonCyan,
-            ),
-          ),
           field: expr.coalesce(expr.get(field("name")), ""),
           font: "Oxanium Medium",
-          haloColor: cyberpunkPalette.labelHalo,
-          haloWidth: 1.2,
-          ignorePlacement: false,
-          letterSpacing: 0.055,
-          offset: [0, 1.35],
-          opacity: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-            [15, 0],
-            [16, 0.82],
-          ]),
-          optional: true,
-          padding: 4,
-          size: 10,
           transform: "uppercase",
+          color: cyberpunkPoiImportanceColor,
+          anchor: "top",
+          offset: [0, 1.45],
+          allowOverlap: false,
+          ignorePlacement: false,
+          optional: true,
+          haloColor: cyberpunkPalette.labelHalo,
+          haloWidth: 1.15,
+          letterSpacing: 0.055,
+          maxWidth: 11,
+          padding: 6,
+          size: zoom.linear([
+            [13, 9],
+            [16, 10.5],
+            [19, 11.5],
+          ]),
+          opacity: zoom.linear([
+            [13, 0.6],
+            [15, 0.92],
+          ]),
         },
       },
     }),
@@ -1826,19 +2043,22 @@ function cyberpunkWaterRenderStack(): TileflowNamedRenderStack {
   const polygonSelector = { kind: "geometry", geometry: "polygon" } as const;
   return {
     shoreAura: renderPass({
-      placement: { above: "water.bodies.fill" },
+      placement: { below: "water.render.shoreCore" },
       feature: "water",
       renderer: "line",
       selector: polygonSelector,
       style: {
         blur: 2,
         color: cyberpunkPalette.neonCyan,
-        minZoom: 6,
+        minZoom: 0,
         opacity: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-          [6, 0],
+          [0, 0.08],
+          [4, 0.13],
           [8, 0.16],
         ]),
         width: expr.interpolate({ kind: "linear" }, expr.zoom(), [
+          [0, 1.8],
+          [4, 2.5],
           [8, 1],
           [14, 3],
           [18, 7],
@@ -1846,19 +2066,22 @@ function cyberpunkWaterRenderStack(): TileflowNamedRenderStack {
       },
     }),
     shoreCore: renderPass({
-      placement: { above: "water.render.shoreAura" },
+      placement: { below: "water.bodies.fill" },
       feature: "water",
       renderer: "line",
       selector: polygonSelector,
       style: {
         blur: 0.15,
         color: cyberpunkPalette.neonCyan,
-        minZoom: 6,
+        minZoom: 0,
         opacity: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-          [6, 0],
+          [0, 0.65],
+          [4, 0.7],
           [8, 0.58],
         ]),
         width: expr.interpolate({ kind: "linear" }, expr.zoom(), [
+          [0, 1.5],
+          [4, 1.6],
           [8, 0.3],
           [14, 0.7],
           [18, 1.5],
@@ -1871,7 +2094,7 @@ function cyberpunkWaterRenderStack(): TileflowNamedRenderStack {
 function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
   const polygonSelector = { kind: "geometry", geometry: "polygon" } as const;
   return {
-    businessGrid: renderPass({
+    sectorWash: renderPass({
       placement: { above: "land.landuse.residential.fill" },
       feature: "landuse",
       renderer: "fill",
@@ -1880,10 +2103,59 @@ function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
         selectors: [
           polygonSelector,
           {
-            kind: "compare",
+            kind: "in",
             field: "class",
-            operator: "eq",
-            value: "business_area",
+            values: [
+              "business_area",
+              "commercial",
+              "retail",
+              "industrial",
+              "railway",
+              "education",
+              "school",
+              "university",
+              "hospital",
+              "medical",
+              "government",
+            ],
+          },
+        ],
+      },
+      style: {
+        minZoom: 10,
+        color: expr.match<string, string>(
+          expr.get(field("class")),
+          [
+            {
+              labels: ["business_area", "commercial", "retail"],
+              value: "#35152F",
+            },
+            { labels: ["industrial", "railway"], value: "#29272C" },
+            { labels: ["education", "school", "university"], value: "#22203F" },
+            { labels: ["hospital", "medical"], value: "#321D30" },
+          ],
+          "#142D39",
+        ),
+        opacity: zoom.linear([
+          [10, 0],
+          [12, 0.62],
+          [15, 0.48],
+          [18, 0.3],
+        ]),
+      },
+    }),
+    businessGrid: renderPass({
+      placement: { above: "land.render.sectorWash" },
+      feature: "landuse",
+      renderer: "fill",
+      selector: {
+        kind: "all",
+        selectors: [
+          polygonSelector,
+          {
+            kind: "in",
+            field: "class",
+            values: ["business_area", "commercial", "retail", "industrial"],
             fallback: "",
           },
         ],
@@ -1892,9 +2164,9 @@ function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
         minZoom: 15,
         opacity: expr.interpolate({ kind: "linear" }, expr.zoom(), [
           [15, 0],
-          [16, 0.08],
-          [18, 0.12],
-          [22, 0.16],
+          [16, 0.035],
+          [18, 0.065],
+          [22, 0.08],
         ]),
         pattern: "cyberpunk-data-grid",
       },
@@ -1932,16 +2204,26 @@ function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
           [
             {
               labels: ["business_area", "commercial", "retail"],
-              value: "#E63BB0",
+              value: cyberpunkPalette.activityInk,
             },
-            { labels: ["hospital", "medical"], value: "#FF4D87" },
-            { labels: ["education", "school", "university"], value: "#9D73FF" },
+            { labels: ["industrial", "railway"], value: "#BC915B" },
+            {
+              labels: ["hospital", "medical"],
+              value: cyberpunkPalette.destinationInk,
+            },
+            {
+              labels: ["education", "school", "university"],
+              value: cyberpunkPalette.destinationInk,
+            },
           ],
           "#7657FF",
         ),
-        dash: [1.2, 1.8],
         minZoom: 11,
-        opacity: 0.34,
+        opacity: zoom.linear([
+          [11, 0.12],
+          [14, 0.25],
+          [18, 0.16],
+        ]),
         width: expr.interpolate({ kind: "linear" }, expr.zoom(), [
           [11, 0.3],
           [16, 0.7],
@@ -1963,10 +2245,9 @@ function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
       },
       style: {
         blur: 0.1,
-        color: "#28D7A5",
-        dash: [2.5, 1.5],
+        color: cyberpunkPalette.natureInk,
         minZoom: 11,
-        opacity: 0.5,
+        opacity: 0.35,
         width: expr.interpolate({ kind: "linear" }, expr.zoom(), [
           [11, 0.35],
           [16, 0.9],
@@ -1974,6 +2255,61 @@ function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
         ]),
       },
     }),
+  };
+}
+
+function cyberpunkTransitStyle() {
+  const base = mapboxRailTransitStyle("#C19A66");
+  return {
+    ...base,
+    ferry: { minZoom: 9, opacity: 0.22 },
+    rail: {
+      ...base.rail,
+      surface: {
+        ...base.rail?.surface,
+        minZoom: 11,
+        opacity: zoom.linear([
+          [11, 0.4],
+          [14, 0.7],
+          [18, 0.85],
+        ]),
+      },
+      bridge: {
+        ...base.rail?.bridge,
+        minZoom: 11,
+        color: "#E6BD83",
+        opacity: 0.85,
+      },
+      tunnel: {
+        minZoom: 14,
+        color: "#85765E",
+        width: 0.7,
+        dash: [4, 4],
+        opacity: 0.35,
+      },
+    },
+    railHatching: {
+      ...base.railHatching,
+      surface: {
+        ...base.railHatching?.surface,
+        opacity: zoom.linear([
+          [15, 0],
+          [17, 0.45],
+        ]),
+      },
+      bridge: {
+        ...base.railHatching?.bridge,
+        opacity: zoom.linear([
+          [15, 0],
+          [17, 0.55],
+        ]),
+      },
+    },
+    serviceRail: {
+      ...base.serviceRail,
+      surface: { ...base.serviceRail?.surface, minZoom: 15, opacity: 0.32 },
+      bridge: { ...base.serviceRail?.bridge, minZoom: 15, opacity: 0.42 },
+    },
   };
 }
 
@@ -2200,15 +2536,15 @@ export const cyberpunkTheme = defineCommunityTheme({
     landuse: {
       cemetery: "#081F47",
       civic: "#071A3F",
-      commercial: "#091B43",
-      education: "#0A1D48",
-      government: "#0B1944",
-      industrial: "#061634",
-      medical: "#10183F",
+      commercial: "#19152F",
+      education: "#171C35",
+      government: "#102333",
+      industrial: "#181C29",
+      medical: "#25172D",
       military: "#121638",
       parking: "#020A20",
       recreation: "#0D2928",
-      residential: "#06183A",
+      residential: "#0A172A",
     },
     poi: {
       "arts-entertainment": cyberpunkPalette.labelCulture,
@@ -2256,6 +2592,15 @@ export const cyberpunkTheme = defineCommunityTheme({
     color: "#FFE6F6",
     intensity: 0.22,
     position: [1.15, 210, 40],
+    // Cool modelling light for the tree crowns; flat cartography keeps its ink colours.
+    sun: {
+      azimuth: 315,
+      altitude: 48,
+      color: "#8FE7EB",
+      intensity: 0.42,
+      shadowIntensity: 0.12,
+    },
+    ambient: { color: "#A0D2E7", intensity: 0.58 },
   },
 });
 
@@ -2279,7 +2624,7 @@ export const cyberpunk = bindCommunityMapTheme(
       boundaries: withRenderStack(
         boundaries({
           admin2: {
-            color: token.color("boundaries.admin"),
+            color: "#7477B4",
             dash: [10, 0],
             minZoom: 1,
             opacity: 1,
@@ -2289,16 +2634,19 @@ export const cyberpunk = bindCommunityMapTheme(
             ]),
           },
           admin4: {
-            color: token.color("boundaries.regional"),
-            dash: [2, 0],
-            minZoom: 2,
+            color: "#8667A6",
+            dash: [3, 3],
+            minZoom: 4,
             opacity: zoom.linear([
-              [2, 0],
-              [3, 1],
+              [4, 0],
+              [6, 0.5],
+              [10, 0.38],
+              [13, 0.16],
             ]),
             width: zoom.linear([
-              [3, 0.3],
-              [12, 1.5],
+              [4, 0.45],
+              [10, 0.8],
+              [14, 1],
             ]),
           },
           disputed: {
@@ -2362,35 +2710,9 @@ export const cyberpunk = bindCommunityMapTheme(
           }),
         },
       ),
-      buildings: withRenderStack(
-        buildings({
-          businessCorridor: {
-            fill: { visible: false },
-            outline: { visible: false },
-          },
-          flat: {
-            fill: {
-              color: cyberpunkBuildingGhostFill,
-              minZoom: 15,
-              opacity: 0.56,
-            },
-            outline: {
-              blur: 0,
-              color: cyberpunkBuildingGhostCore,
-              minZoom: 15,
-              opacity: cyberpunkBuildingGhostCoreOpacity,
-              width: zoom.linear([
-                [15, 0.55],
-                [16, 0.62],
-                [18, 0.9],
-                [22, 1.8],
-              ]),
-            },
-          },
-          mode: "flat",
-        }),
-        cyberpunkBuildingRenderStack(),
-      ),
+      // The city stack authors native low relief; omit the standard building module
+      // so the runtime cannot replace it with full-height buildings or landmark models.
+      buildings: disable(),
       labels: withRenderStack(
         labels({
           aerodromeCodes: "none",
@@ -2409,12 +2731,91 @@ export const cyberpunk = bindCommunityMapTheme(
           roads: "all",
           shields: "none",
           water: "major",
+          styles: {
+            water: {
+              // World also classifies small fountains as lakes: defer point
+              // names so they do not compete with districts at city zooms.
+              other: {
+                minZoom: 15.5,
+                text: {
+                  color: "#789CB5",
+                  haloWidth: 0.8,
+                  size: zoom.linear([
+                    [15.5, 10],
+                    [19, 12],
+                  ]),
+                  maxWidth: 9,
+                  padding: 6,
+                },
+              },
+              line: {
+                placement: "line-center",
+                text: {
+                  color: "#789CB5",
+                  haloWidth: 0.8,
+                  size: zoom.linear([
+                    [5, 11],
+                    [16, 13],
+                  ]),
+                },
+              },
+              ocean: {
+                text: { color: "#789CB5", haloWidth: 0, letterSpacing: 0.2 },
+              },
+            },
+          },
         }),
-        cyberpunkLabelRenderStack(),
+        { ...cyberpunkLabelRenderStack(), ...cyberpunkSettlementRenderStack() },
       ),
       land: withRenderStack(
         land({
           background: { color: cyberpunkPalette.land },
+          landuse: {
+            residential: {
+              fill: {
+                color: zoom.linear([
+                  [8, "#29243E"],
+                  [12, "#20243B"],
+                  [15, "#0A172A"],
+                ]),
+                opacity: zoom.linear([
+                  [8, 0.76],
+                  [12, 0.8],
+                  [15, 0.62],
+                ]),
+              },
+            },
+          },
+          landcover: {
+            wood: {
+              fill: {
+                opacity: zoom.linear([
+                  [8, 0.48],
+                  [12, 0.65],
+                  [15, 0.88],
+                ]),
+              },
+            },
+            protected: {
+              fill: {
+                opacity: zoom.linear([
+                  [8, 0.3],
+                  [12, 0.45],
+                  [15, 0.88],
+                ]),
+              },
+            },
+            urbanPark: {
+              fill: {
+                color: zoom.linear([
+                  [8, "#103A37"],
+                  [13, "#103B36"],
+                  [15, cyberpunkPalette.park],
+                ]),
+                opacity: 0.78,
+              },
+            },
+          },
           globalLandcover: {
             color: cyberpunkOverviewLandcoverColor,
             maxZoom: 9,
@@ -2428,10 +2829,19 @@ export const cyberpunk = bindCommunityMapTheme(
             ]),
           },
         }),
-        cyberpunkLandRenderStack(),
+        { ...cyberpunkLandRenderStack(), ...cyberpunkBuildingRenderStack() },
       ),
       roads: withRenderStack(
         roads({
+          streetLights: { enabled: false },
+          crossings: {
+            image: "cyberpunk-crosswalk",
+            minZoom: 16.5,
+            opacity: zoom.linear([
+              [16.5, 0],
+              [17.5, 0.7],
+            ]),
+          },
           areas: {
             pedestrian: {
               fill: { visible: false },
@@ -2673,7 +3083,14 @@ export const cyberpunk = bindCommunityMapTheme(
           sidewalks: {
             outline: { visible: false },
             pattern: { visible: false },
-            surface: { visible: false },
+            surface: {
+              color: "#326C86",
+              minZoom: 17,
+              opacity: zoom.linear([
+                [17, 0],
+                [18, 0.16],
+              ]),
+            },
           },
           weight: "regular",
         }),
@@ -2682,7 +3099,7 @@ export const cyberpunk = bindCommunityMapTheme(
           ...cyberpunkPrincipalRoadRenderStack(),
         },
       ),
-      transit: transit(mapboxRailTransitStyle(cyberpunkPalette.orange)),
+      transit: transit(cyberpunkTransitStyle()),
       landforms: disable(),
       poi: withRenderStack(
         poi({
@@ -2690,22 +3107,97 @@ export const cyberpunk = bindCommunityMapTheme(
           color: "category",
           density: 2,
           icons: false,
-          labels: true,
+          labels: false,
           minZoom: 15,
           placement: {
+            order: "categories",
             coupleIconAndLabel: false,
             iconPadding: 4,
             textPadding: 4,
           },
         }),
-        {
-          ...cyberpunkPoiLabelRenderStack(),
-          ...cyberpunkDestinationRenderStack(),
-        },
+        cyberpunkDestinationRenderStack(),
       ),
-      vegetation: disable(),
-      // Keep hydrography driven solely by Cyberpunk's dark theme.
-      water: withRenderStack(water(), cyberpunkWaterRenderStack()),
+      vegetation: vegetation({
+        // Explicit 3d keeps trees independent of the preview's building/view toggle.
+        mode: "3d",
+        fallback: "flat",
+        flat: {
+          minZoom: 15,
+          color: "#164C47",
+          opacity: zoom.linear([
+            [15, 0],
+            [16, 0.9],
+          ]),
+          radius: zoom.linear([
+            [15, 1.2],
+            [18, 3.4],
+            [20, 7],
+          ]),
+          strokeColor: "#38BFA7",
+          strokeWidth: 0.65,
+          strokeOpacity: 0.7,
+        },
+        threeDimensional: {
+          barkColor: "#254451",
+          broadleafColors: ["#0C443F", "#125C50", "#19735E", "#238E74"],
+          coniferColors: ["#103D48", "#175565", "#247580"],
+          palmColors: ["#125449", "#1C7360", "#2C9278"],
+          finish: "faceted",
+          edges: 0.7,
+          edgeColor: "#2D9F95",
+          heightScale: 0.9,
+          crownScale: 0.9,
+        },
+      }),
+      water: withRenderStack(
+        water({
+          bodies: {
+            fill: {
+              color: zoom.linear([
+                [0, "#040C18"],
+                [7, "#061527"],
+                [15, cyberpunkPalette.water],
+              ]),
+            },
+          },
+          bathymetry: {
+            color: expr.interpolate(
+              { kind: "linear" },
+              expr.toNumber(expr.get(field("bathymetryMinDepth")), 0),
+              [
+                [-11000, "#030914"],
+                [-2000, "#061324"],
+                [-200, "#0A2636"],
+                [0, "#103346"],
+              ],
+            ),
+            opacity: zoom.linear([
+              [0, 0.55],
+              [6, 0.45],
+              [9, 0.2],
+              [10, 0],
+            ]),
+          },
+          waterways: {
+            river: {
+              color: zoom.linear([
+                [6, "#24576A"],
+                [13, "#3D8490"],
+                [16, cyberpunkPalette.roadCasing],
+              ]),
+            },
+            stream: {
+              opacity: zoom.linear([
+                [10, 0.25],
+                [13, 0.5],
+                [16, 1],
+              ]),
+            },
+          },
+        }),
+        cyberpunkWaterRenderStack(),
+      ),
     },
     projection: "mercator",
     terrain: "none",

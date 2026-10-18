@@ -2355,6 +2355,7 @@ export const terminal = bindCommunityMapTheme(
           labels: true,
           minZoom: 15,
           placement: {
+            order: 'categories',
             coupleIconAndLabel: false,
             iconPadding: 4,
             textPadding: 4,

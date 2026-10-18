@@ -32,9 +32,14 @@ Upstream: <https://github.com/sevmeyer/oxanium>, revision
 
 ## Preview images and map data
 
-The three `preview.webp` images are existing Tileflow captures of the original designs, relabeled
-for this collection. They show Madrid and illustrate the appearance; they are not newly generated
-captures of the current Tileflow World service. The map artwork retains Apache-2.0; the underlying
+The Terminal and Super Tile World `preview.webp` images are existing Tileflow captures of the
+original designs, relabeled for this collection. They show Madrid and are not newly generated
+captures of the current Tileflow World service.
+
+The Cyberpunk preview is a new capture of its `gran-via` scene, rendered on 2026-10-18 with Tileflow
+World data at zoom 16.5, bearing 0 and pitch 0, with the static flat-tree fallback. Its blue-grey crossing sprite is an adaptation of
+Tileflow's original Streets crosswalk artwork. Its category sign pictograms are original Tileflow
+SVG drawings; no reference-game artwork was copied. The map artwork retains Apache-2.0; the underlying
 OpenStreetMap data is © OpenStreetMap contributors, available under the Open Database License.
 
 Preserve visible attribution to [OpenStreetMap contributors](https://www.openstreetmap.org/copyright)

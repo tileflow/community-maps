@@ -236,7 +236,6 @@ function stop(
   );
   return {
     minZoom,
-    density: featured ? 2 : 1,
     icon: {
       image,
       size: park
@@ -924,6 +923,7 @@ export const superTileWorld = bindCommunityMapTheme(
           icons: true,
           labels: true,
           placement: {
+            order: "categories",
             coupleIconAndLabel: true,
             iconPadding: 8,
             textPadding: 7,

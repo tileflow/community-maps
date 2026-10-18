@@ -220,8 +220,8 @@ export const wildlands = defineMap({
     buildings: buildings({ mode: "flat", flat: {
       fill: { minZoom: buildingDetailZoom, color: ink("surface.building"), opacity: metric(0.8) },
       outline: { minZoom: buildingDetailZoom, color: ink("building.outline"), width: metric(0.7) } }, businessCorridor: { fill: { visible: false } } }),
-    vegetation: withRenderStack(vegetation({ mode: "flat", minZoom: 14,
-      flat: { visible: false, opacity: metric(0), strokeOpacity: metric(0) } }), {
+    vegetation: withRenderStack(vegetation({ mode: "flat",
+      flat: { minZoom: 14, visible: false, opacity: metric(0), strokeOpacity: metric(0) } }), {
       // One drawing per mapped tree point. Woodland polygons never create tree positions.
       mappedTrees: renderPass({
         feature: "tree", renderer: "symbol", placement: "above-vegetation",
@@ -251,7 +251,7 @@ export const wildlands = defineMap({
     }),
     poi: poi({ categories: Object.keys(destinations) as TileflowPoiCategory[], density: 1,
       minZoom: 14, icons: true, labels: true, styles: destinations,
-      placement: { coupleIconAndLabel: true, iconPadding: 16, textPadding: 8 } }),
+      placement: { order: "categories", coupleIconAndLabel: true, iconPadding: 16, textPadding: 8 } }),
     addresses: disable(), aeroways: disable(), boundaries: disable(), transit: disable(), nautical: disable(),
   },
   view: { center: [-6.718, 42.125], zoom: 14.1, pitch: 0, bearing: 0 },

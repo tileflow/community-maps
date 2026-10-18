@@ -76,8 +76,8 @@ test(
           "--no-fund",
           "--package-lock=false",
           archive,
-          "@tileflow/core@0.1.0-alpha.30",
-          "@tileflow/dev@0.1.0-alpha.28",
+          "@tileflow/core@0.1.0-alpha.35",
+          "@tileflow/dev@0.1.0-alpha.32",
         ],
         { cwd, maxBuffer: 2_000_000 },
       );
@@ -86,7 +86,7 @@ test(
         `
       import assert from 'node:assert/strict';
       import {writeFile} from 'node:fs/promises';
-      import {createTileflowBuildArtifacts, disposeTileflowBuildArtifacts} from '@tileflow/dev';
+      import {createTileflowBuildArtifacts, disposeTileflowBuildArtifacts} from '@tileflow/dev/artifacts';
       for (const [name, id, theme, fonts] of [['cyberpunk', 'cyberpunk', 'dark', 2], ['terminal', 'terminal', 'dark', 2], ['superTileWorld', 'super-tile-world', 'light', 3], ['wildlands', 'wildlands', 'parchment', 2]]) {
         await writeFile('tileflow.config.ts',
           "import {" + name + "} from '@tileflow/community-maps'; export default " + name + ";");
