@@ -8,20 +8,21 @@ const mesh = (material) => ({
   material,
   positions: [],
   normals: [],
+  shades: [],
   indices: [],
 });
-const add = (a, b) => a.map((x, i) => x + b[i]);
 const sub = (a, b) => a.map((x, i) => x - b[i]);
 const cross = (a, b) => [
   a[1] * b[2] - a[2] * b[1],
   a[2] * b[0] - a[0] * b[2],
   a[0] * b[1] - a[1] * b[0],
 ];
-function vertex(m, position, normal) {
+function vertex(m, position, normal, shade = 0.8) {
   const index = m.positions.length / 3,
     length = Math.hypot(...normal);
   m.positions.push(...position);
   m.normals.push(...normal.map((n) => n / length));
+  m.shades.push(shade);
   return index;
 }
 function triangle(m, a, b, c) {
@@ -36,41 +37,6 @@ function triangle(m, a, b, c) {
       ? [a, c, b]
       : [a, b, c]),
   );
-}
-function crown(m, center, radii, sides, rings) {
-  const bottom = vertex(m, add(center, [0, -radii[1], 0]), [0, -1, 0]),
-    rows = [];
-  for (let j = 1; j < rings; j++) {
-    const latitude = -Math.PI / 2 + (Math.PI * j) / rings;
-    rows.push(
-      Array.from({ length: sides }, (_, i) => {
-        const longitude = (2 * Math.PI * i) / sides;
-        const p = [
-          Math.cos(latitude) * Math.cos(longitude),
-          Math.sin(latitude),
-          Math.cos(latitude) * Math.sin(longitude),
-        ];
-        return vertex(
-          m,
-          add(
-            center,
-            p.map((x, k) => x * radii[k]),
-          ),
-          p.map((x, k) => x / radii[k]),
-        );
-      }),
-    );
-  }
-  const top = vertex(m, add(center, [0, radii[1], 0]), [0, 1, 0]);
-  for (let i = 0; i < sides; i++) {
-    const next = (i + 1) % sides;
-    triangle(m, bottom, rows[0][i], rows[0][next]);
-    for (let j = 1; j < rows.length; j++) {
-      triangle(m, rows[j - 1][i], rows[j][i], rows[j][next]);
-      triangle(m, rows[j - 1][i], rows[j][next], rows[j - 1][next]);
-    }
-    triangle(m, rows.at(-1)[i], top, rows.at(-1)[next]);
-  }
 }
 function trunk(m, height, radius, sides) {
   const rows = [0, height].map((y, row) =>
@@ -90,44 +56,109 @@ function trunk(m, height, radius, sides) {
     triangle(m, rows[0][i], rows[1][n], rows[0][n]);
   }
 }
+// Lathed crowns keep one uninterrupted silhouette, with broad bands and a flared rim.
+// Adjacent bands share positions/normals but retain their own vertex shade at the seam.
+function silhouette(m, profile, sides, width = 1, banded = false, far = false) {
+  const normalAt = (i, angle) => {
+    if (profile[i][1] === 0) return [0, i === 0 ? -1 : 1, 0];
+    const before = profile[Math.max(0, i - 1)],
+      after = profile[Math.min(profile.length - 1, i + 1)];
+    const slope =
+      ((after[1] - before[1]) * width) / Math.max(0.001, after[0] - before[0]);
+    return [Math.cos(angle), -slope, Math.sin(angle)];
+  };
+  for (let j = 1; j < profile.length; j++) {
+    const low = profile[j - 1],
+      high = profile[j];
+    const shade = banded ? (j % 2 ? 1 : 0.18) : 0.8;
+    const rows = [j - 1, j].map((row) =>
+      Array.from({ length: sides }, (_, i) => {
+        const angle = (2 * Math.PI * i) / sides;
+        const [y, radius] = profile[row];
+        const scallop = far
+          ? 1
+          : 1 + 0.025 * Math.cos(angle * 5) * Math.max(0, (0.48 - y) / 0.25);
+        return vertex(
+          m,
+          [
+            Math.cos(angle) * radius * width * scallop,
+            y,
+            Math.sin(angle) * radius * width * scallop,
+          ],
+          normalAt(row, angle),
+          shade,
+        );
+      }),
+    );
+    for (let i = 0; i < sides; i++) {
+      const next = (i + 1) % sides;
+      if (low[1] > 0) triangle(m, rows[0][i], rows[0][next], rows[1][next]);
+      if (high[1] > 0) triangle(m, rows[0][i], rows[1][next], rows[1][i]);
+    }
+  }
+}
+
 function tree(form, far) {
   const bark = mesh("bark"),
     leaves = mesh(form === "palm" ? "fronds" : "leaves");
-  const sides = far ? 6 : 10,
-    rings = far ? 3 : 6;
-  trunk(
-    bark,
-    form === "palm" ? 0.88 : 0.66,
-    form === "palm" ? 0.045 : 0.065,
-    far ? 6 : 12,
-  );
-  if (form === "round" || form === "open") {
-    const open = form === "open";
-    crown(leaves, [0, 0.72, 0], [open ? 0.28 : 0.3, 0.28, 0.29], sides, rings);
-    for (const sign of [-1, 1])
-      crown(
-        leaves,
-        [sign * (open ? 0.26 : 0.19), open ? 0.6 : 0.59, 0.025],
-        [open ? 0.25 : 0.2, open ? 0.23 : 0.21, 0.23],
-        sides,
-        rings,
-      );
-  } else if (form === "tall" || form === "columnar") {
-    crown(
+  if (form === "palm") trunk(bark, 0.88, 0.055, far ? 6 : 12);
+  else
+    silhouette(
+      bark,
+      [
+        [0, 0.105],
+        [0.055, 0.068],
+        [0.31, 0.05],
+      ],
+      far ? 6 : 12,
+      1,
+      false,
+      far,
+    );
+  if (["round", "open", "tall"].includes(form)) {
+    // The collar and domed, almost cylindrical crown are the signature of a bell tree.
+    const profile = [
+      [0.24, 0],
+      [0.25, 0.23],
+      [0.31, 0.36],
+      [0.39, 0.35],
+      [0.48, 0.315],
+      [0.61, 0.305],
+      [0.74, 0.28],
+      [0.86, 0.225],
+      [0.95, 0.13],
+      [1, 0],
+    ];
+    silhouette(
       leaves,
-      [0, 0.64, 0],
-      [form === "tall" ? 0.25 : 0.15, 0.36, form === "tall" ? 0.24 : 0.15],
-      far ? 8 : 12,
-      far ? 4 : 8,
+      profile,
+      far ? 6 : 20,
+      form === "open" ? 1.2 : form === "tall" ? 0.76 : 1,
+      true,
+      far,
     );
   } else if (form === "conifer") {
-    // Rounded tiers keep the evergreen silhouette at both levels of detail.
-    for (const [y, r, h] of [
-      [0.45, 0.3, 0.18],
-      [0.64, 0.235, 0.19],
-      [0.82, 0.16, 0.18],
-    ])
-      crown(leaves, [0, y, 0], [r, h, r], sides, rings);
+    const profile = [
+      [0.24, 0],
+      [0.28, 0.32],
+      [0.5, 0.15],
+      [0.51, 0.255],
+      [0.72, 0.1],
+      [0.73, 0.18],
+      [1, 0],
+    ];
+    silhouette(leaves, profile, far ? 6 : 20, 1, true, far);
+  } else if (form === "columnar") {
+    const profile = [
+      [0.24, 0],
+      [0.3, 0.13],
+      [0.46, 0.16],
+      [0.65, 0.155],
+      [0.8, 0.125],
+      [0.93, 0.075],
+      [1, 0],
+    ];
+    silhouette(leaves, profile, far ? 6 : 16, 1, true, far);
   } else {
     // Broad arched fronds with a central ridge, all actual triangles.
     for (let leaf = 0; leaf < 6; leaf++) {
@@ -165,6 +196,7 @@ function tree(form, far) {
   }
   return [bark, leaves];
 }
+
 function glb(parts, name) {
   const blocks = [],
     bufferViews = [],
@@ -202,6 +234,12 @@ function glb(parts, name) {
         ),
       }),
       NORMAL: accessor(new Float32Array(m.normals), "VEC3", 5126, 34962),
+      COLOR_0: accessor(
+        new Float32Array(m.shades.flatMap((shade) => [shade, shade, shade])),
+        "VEC3",
+        5126,
+        34962,
+      ),
     },
     indices: accessor(new Uint16Array(m.indices), "SCALAR", 5123, 34963),
     material,

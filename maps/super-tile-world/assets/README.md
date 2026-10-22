@@ -45,7 +45,7 @@ Research references, inspected while developing this independent set:
 The font files under `fonts/` are separately licensed upstream assets. Their exact versions,
 OpenType names, source links, and complete licenses are preserved beside them.
 
-The six original [3D tree forms](models/README.md) follow a rounded toy-world direction inspired
-by Super Mario 3D World. Their source is `build-trees.mjs`; all geometry is generated locally
+The six original [3D tree forms](models/README.md) follow the recognizable bell-tree direction
+of Super Mario 3D World: domed crowns, flared collars, bands and pale trunks. Their source is `build-trees.mjs`; all geometry is generated locally
 without imported game assets. Near and far silhouettes match. The model colors are authored by
 the map theme, with `bark`, `leaves` and `fronds` identifying their paintable parts.

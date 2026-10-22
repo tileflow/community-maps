@@ -688,7 +688,8 @@ export const superTileWorld = bindCommunityMapTheme(
           areas: {
             pedestrian: area(c.route, 14),
             road: area(c.route, 16),
-            pier: area(c.cliff, 12, true),
+            // World currently has pier polygons but no transportation_outline source layer.
+            pier: area(c.cliff, 12),
           },
           sidewalks: {
             surface: { visible: false },
@@ -1104,8 +1105,8 @@ export const superTileWorld = bindCommunityMapTheme(
         threeDimensional: {
           finish: "smooth",
           edges: 0,
-          barkColor: c.earth,
-          broadleafColors: ["#329A57", "#51B95B", "#7DD366", "#A1E17B"],
+          barkColor: "#EBDDC4",
+          broadleafColors: ["#EDB432", "#F6C23D", "#FFD24D", "#FFDC62"],
           coniferColors: ["#28875C", "#3AA56A", "#65C47A"],
           palmColors: ["#3BA963", "#69C766", "#9AD974"],
           hedgeColors: ["#3AA15A", "#64BD61"],

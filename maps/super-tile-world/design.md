@@ -6,14 +6,17 @@ layered shores and destination icons, while giving the landscape real three-dime
 The normal World geography remains interactive; colors use the published `building_tone` field.
 
 The map declares its own icons, fonts and models. All artwork belongs to this map directory.
-Six original GLB forms have smooth normals and matching near/far geometry: a lobed round crown,
-a spreading crown, a tall oval, a three-tier evergreen, a narrow column and an arched palm.
+Six original GLB forms have smooth normals and matching near/far geometry: a bell crown,
+a broader bell, a taller bell, a three-tier evergreen, a narrow column and an arched palm.
+The bell profile follows the domed top, flared lower rim, broad horizontal bands and pale trunk
+visible in Super Bell Hill gameplay. Golden foliage makes that reference immediately readable;
+conifers and palms retain green palettes. All geometry is authored here, without extracted models.
 They use the SDK's instanced vegetation renderer and shared sunlight/shadows. Near meshes use
-120–324 triangles; far meshes use 60–84. There are no leaf textures or billboard planes.
+120–368 triangles; far meshes use 60–120. There are no leaf textures or billboard planes.
 See [model sources](assets/models/README.md) for reproducible generation and budgets.
 
 Trees come from geographic points and rows, following any supplied form or species. Unknown
-forms favor round crowns (6:3:1 round/open/tall). Grass polygons are not permission to scatter
+forms favor bell crowns (6:3:1 round/open/tall). Grass polygons are not permission to scatter
 fictional trees. Missing tree data leaves quiet ground detail. The meadow and forest patterns
 contain only grass, flowers and leaf marks, never miniature trees or hills. The retained
 `stw-tree` asset is available to existing consumers but is not referenced by this design.
@@ -46,3 +49,7 @@ up to 2 and supporting categories stop at 1. At z17, all categories admit ranks 
 up to 5, allowing ordinary shops and food destinations into close street views. Generic transit
 facilities enter at z18; real stations can appear earlier. Unranked candidates are not invented
 as destinations. Airports have a separate airship label; small culture POIs wait until z17.
+
+World’s current release has pier polygons but no `transportation_outline` source layer. Pier
+fill remains enabled; its optional outline is disabled so the browser does not request a missing
+source layer. This keeps Gallery’s real load-error reporting intact.

@@ -385,3 +385,13 @@ test("Super Tile World ships valid near and far tree meshes without a sprite fal
     ),
   );
 });
+
+test("Super Tile World does not request the pier outline layer absent from current World", () => {
+  assert.ok(
+    !compiled.style.layers.some(
+      (layer) =>
+        (layer as unknown as { "source-layer"?: string })["source-layer"] ===
+        "transportation_outline",
+    ),
+  );
+});
