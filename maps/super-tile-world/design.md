@@ -1,35 +1,48 @@
 # Super Tile World design
 
-`superTileWorld` is an independent pixel-art showcase named “Super Tile World”, inspired by the
-playful overworld of Super Mario World. It translates real geographic features into a game board:
-raised green landscapes, layered blue shores, golden routes, block-like buildings, and destination
-sprites. Transit stations become warp pipes, landmarks become castles or stars, and everyday
-places use a coordinated vocabulary of mushrooms, question blocks, coins, hearts, and flags.
-Its own semantic render stacks define the composition; it does not import an existing map or
-post-process screenshots. The normal World geography remains interactive at every zoom.
-Building colors use the published World `building_tone`, not an unpublished building-kind field.
+`superTileWorld` is an independent toy-world showcase inspired by the rounded volumes and
+cheerful colors of Super Mario 3D World. It keeps its original golden routes, arcade typography,
+layered shores and destination icons, while giving the landscape real three-dimensional trees.
+The normal World geography remains interactive; colors use the published `building_tone` field.
 
-The map declares `[superTileWorldIcons]` for sixteen original SVG sprites and seven repeating
-pixel patterns, plus `[superTileWorldFonts]` for local Pixelify Sans Regular and SemiBold detail
-lettering, Tile World Arcade Regular display lettering, and Noto Sans Regular fallback. The small-scale world, district board,
-and close street views use different geometry and label densities. The result intentionally
-prioritizes an expressive showcase over navigation. Asset sources and licenses are documented in
-`assets/README.md` and `THIRD_PARTY_NOTICES.md`.
+The map declares its own icons, fonts and models. All artwork belongs to this map directory.
+Six original GLB forms have smooth normals and matching near/far geometry: a lobed round crown,
+a spreading crown, a tall oval, a three-tier evergreen, a narrow column and an arched palm.
+They use the SDK's instanced vegetation renderer and shared sunlight/shadows. Near meshes use
+120–324 triangles; far meshes use 60–84. There are no leaf textures or billboard planes.
+See [model sources](assets/models/README.md) for reproducible generation and budgets.
 
-| Zoom  | Showcase treatment                                                                            |
-| ----- | --------------------------------------------------------------------------------------------- |
-| 0–9   | Pixel display lettering, broad colored landscapes, forest tiles, and layered shores.          |
-| 10–14 | City castles and settlement nodes, dotted golden routes, raised gardens, and district blocks. |
-| 15–16 | Building footprints, street labels, and selected destination sprites.                         |
-| 17–19 | Brick roof texture, pedestrian coin trails, point trees, and supporting destinations.         |
-| 20+   | Address detail and larger close-view lettering; decorative coin trails retire.                |
+Trees come from geographic points and rows, following any supplied form or species. Unknown
+forms favor round crowns (6:3:1 round/open/tall). Grass polygons are not permission to scatter
+fictional trees. Missing tree data leaves quiet ground detail. The meadow and forest patterns
+contain only grass, flowers and leaf marks, never miniature trees or hills. The retained
+`stw-tree` asset is available to existing consumers but is not referenced by this design.
 
-Platform depth uses ordered, translated 2D fills rather than terrain or building extrusion.
-Optional tree sprites inherit the vegetation anchor, so sources without tree capability omit
-them. POI sprites and names share collision placement. Their selectors retain category,
-filter ranks 0–5, size ranks 0–16, and the producer's minimum zoom. Before z17, featured categories
-admit filter ranks up to 2 and supporting categories stop at 1. At z17, all categories admit ranks
-up to 3; from z18 they admit ranks up to 5, allowing ordinary shops and food destinations to join
-the close street view. Generic transit facilities enter at z18, while real stations can appear earlier. Unranked or invalid candidates are not turned into
-fictional destinations. Airports have a separate airship label, and small secondary culture POIs
-wait until z17. Every decision follows schema-bound fields rather than geographic exceptions.
+Vegetation selects `mode: "3d"`, including overhead views, and `fallback: "none"`. A renderer
+without 3D vegetation still has legible park and forest polygons. A runtime trees-off control
+hides the models without revealing tree sprites underneath. The example scene opens over
+Madrid at z16.6, pitch 48°, bearing −18°, so buildings and trees can be seen together.
+
+Building footprints remain the portable 2D base. When attached, Tileflow's 3D scene uses real
+footprints/heights, sun lighting, a 1 m exterior corner radius, restrained edge light (0.22),
+contact shadows and subtle brightness variation (0.06). Warm apricot blocks, red civic buildings,
+purple major destinations and blue industry keep the semantic palette readable. Architectural
+models use cream surfaces, red roofs, gold accents and blue glass. Ordinary buildings retain a
+single material color: separate wall/roof colors would require a future public SDK capability.
+No fictional roof shape or height is inferred when World does not supply one. Translated fake
+building sides and repeated brick overlays have been retired; park edges remain gently raised.
+
+| Zoom | Treatment |
+| --- | --- |
+| 0–9 | Display lettering, broad colored landscapes, sparse floor marks and layered shores. |
+| 10–14 | City castles, dotted golden routes, raised gardens and district blocks. |
+| 15–16 | Smooth 3D tree forms and buildings when the scene is enabled; street labels and selected destinations. |
+| 17–19 | Pedestrian coin trails, closer tree geometry and supporting destinations. |
+| 20+ | Address detail and larger lettering; decorative coin trails retire. |
+
+POI icons and names share collision placement. Their selectors retain category, filter ranks 0–5,
+size ranks 0–16 and producer minimum zoom. Before z17, featured categories admit filter ranks
+up to 2 and supporting categories stop at 1. At z17, all categories admit ranks up to 3; from z18
+up to 5, allowing ordinary shops and food destinations into close street views. Generic transit
+facilities enter at z18; real stations can appear earlier. Unranked candidates are not invented
+as destinations. Airports have a separate airship label; small culture POIs wait until z17.

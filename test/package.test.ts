@@ -50,11 +50,39 @@ test(
       assert.ok(
         files.includes("maps/super-tile-world/assets/fonts/LICENSE.txt"),
       );
-      assert.ok(files.includes("maps/wildlands/assets/icons/wildlands-tree.svg"));
-      assert.ok(files.includes("maps/wildlands/assets/icons/wildlands-tree-pine.svg"));
-      assert.ok(!files.includes("maps/wildlands/assets/icons/wildlands-forest.pattern.svg"));
-      assert.ok(files.includes("maps/wildlands/assets/icons/wildlands-camp.svg"));
-      assert.ok(files.includes("maps/wildlands/assets/fonts/HyliaSerifBeta-Regular.otf"));
+      for (const form of [
+        "round",
+        "open",
+        "tall",
+        "conifer",
+        "columnar",
+        "palm",
+      ])
+        for (const suffix of ["", ".far"])
+          assert.ok(
+            files.includes(
+              `maps/super-tile-world/assets/models/stw-${form}${suffix}.glb`,
+            ),
+          );
+      assert.ok(
+        files.includes("maps/wildlands/assets/icons/wildlands-tree.svg"),
+      );
+      assert.ok(
+        files.includes("maps/wildlands/assets/icons/wildlands-tree-pine.svg"),
+      );
+      assert.ok(
+        !files.includes(
+          "maps/wildlands/assets/icons/wildlands-forest.pattern.svg",
+        ),
+      );
+      assert.ok(
+        files.includes("maps/wildlands/assets/icons/wildlands-camp.svg"),
+      );
+      assert.ok(
+        files.includes(
+          "maps/wildlands/assets/fonts/HyliaSerifBeta-Regular.otf",
+        ),
+      );
       assert.ok(files.includes("maps/wildlands/assets/fonts/LICENSE.txt"));
       assert.ok(
         !files.some((file) => /node_modules|^\.env|^test\//u.test(file)),
@@ -76,8 +104,8 @@ test(
           "--no-fund",
           "--package-lock=false",
           archive,
-          "@tileflow/core@0.1.0-alpha.35",
-          "@tileflow/dev@0.1.0-alpha.32",
+          "@tileflow/core@0.1.0-alpha.38",
+          "@tileflow/dev@0.1.0-alpha.35",
         ],
         { cwd, maxBuffer: 2_000_000 },
       );
@@ -93,6 +121,11 @@ test(
         const result = await createTileflowBuildArtifacts({cwd: process.cwd()});
         try {
           assert.ok(result.styles[id][theme].layers.length > 50);
+          if (id === 'super-tile-world') {
+            const vegetation = result.styles[id][theme].metadata['tileflow:vegetation'];
+            assert.equal(Object.keys(vegetation.models).length, 6);
+            for (const model of Object.values(vegetation.models)) assert.ok(model.near && model.far);
+          }
           assert.equal(result.assets.filter(file => file.fileName.endsWith('.ttf') || file.fileName.endsWith('.otf')).length, fonts);
           assert.ok(result.assets.some(file => file.fileName.endsWith('sprite.png')));
           if (fonts > 0) assert.ok(result.assets.some(file => file.fileName.startsWith('fonts/licenses/')));

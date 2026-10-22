@@ -8,7 +8,13 @@ export default defineMap({
   scenes: {
     madrid: {
       theme: "light",
-      camera: { type: "center", center: [-3.6875, 40.4167], zoom: 14.5 },
+      camera: {
+        type: "center",
+        center: [-3.6914, 40.4178],
+        zoom: 16.6,
+        pitch: 48,
+        bearing: -18,
+      },
       viewport: { width: 1280, height: 800, dpr: 1 },
     },
   },

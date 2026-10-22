@@ -26,14 +26,18 @@ import {
   withRenderStack,
   zoom,
 } from "@tileflow/core";
-import { superTileWorldFonts, superTileWorldIcons } from "./assets";
+import {
+  superTileWorldFonts,
+  superTileWorldIcons,
+  superTileWorldModels,
+} from "./assets";
 import {
   bindCommunityMapTheme,
   defineCommunityTheme,
 } from "../../src/shared/theme-helpers";
 
-// A little cartridge world built from geographic semantics. The deliberately
-// limited palette unifies the terrain tiles, level routes, and original sprites.
+// A little toy world built from geographic semantics. The deliberately limited
+// palette connects rounded trees and sunlit buildings to the original level routes.
 const c = {
   ink: "#29334F",
   earth: "#875339",
@@ -53,7 +57,7 @@ const c = {
   gold: "#FFD452",
   route: "#FFF0A0",
   orange: "#DDA150",
-  roof: "#E9B67A",
+  roof: "#F0C58F",
   red: "#EA6954",
   blue: "#719FCC",
   purple: "#A48DC6",
@@ -366,7 +370,7 @@ const theme = defineCommunityTheme({
   },
 });
 
-/** Original fan-inspired cartridge atlas. Every drawing is owned by this root. */
+/** Original toy-world atlas. Every drawing and model is owned by this root. */
 export const superTileWorld = bindCommunityMapTheme(
   defineMap({
     id: "super-tile-world",
@@ -379,11 +383,12 @@ export const superTileWorld = bindCommunityMapTheme(
     },
     icons: [superTileWorldIcons],
     fonts: [superTileWorldFonts],
+    models: [superTileWorldModels],
     themes: { light: theme },
     defaultTheme: "light",
     projection: "mercator",
     terrain: "none",
-    view: { center: [-3.6875, 40.4167], zoom: 14.5, pitch: 0, bearing: 0 },
+    view: { center: [-3.6914, 40.4178], zoom: 16.6, pitch: 48, bearing: -18 },
     modules: {
       land: withRenderStack(
         land({
@@ -446,7 +451,7 @@ export const superTileWorld = bindCommunityMapTheme(
           worldTufts: renderPass({
             placement: { above: "land.background" },
             renderer: "background",
-            style: { pattern: "stw-grass", opacity: 0.45 },
+            style: { pattern: "stw-grass", opacity: 0.25 },
           }),
           parkCliff: renderPass({
             placement: { below: "land.landcover.urbanPark.fill" },
@@ -594,7 +599,25 @@ export const superTileWorld = bindCommunityMapTheme(
       ),
       buildings: withRenderStack(
         buildings({
+          // Flat footprints are the portable base; the 3D scene draws the volumes.
           mode: "flat",
+          threeDimensional: {
+            lighting: "sun",
+            edgeRadius: 1,
+            edges: 0.22,
+            colorVariation: 0.06,
+            shadows: true,
+            occlusion: true,
+            windows: false,
+            // Keep the same toy palette when World supplies an architectural model.
+            modelColors: {
+              surface: c.cream,
+              secondary: c.roof,
+              roof: c.red,
+              accent: c.gold,
+              glass: c.blue,
+            },
+          },
           businessCorridor: {
             fill: { visible: false },
             outline: { visible: false },
@@ -632,33 +655,6 @@ export const superTileWorld = bindCommunityMapTheme(
               opacity: zoom.linear([
                 [13.5, 0],
                 [15, 0.3],
-              ]),
-            },
-          }),
-          platformSides: renderPass({
-            placement: { below: "buildings.flat.fill" },
-            feature: "building",
-            renderer: "fill",
-            selector: polygon,
-            style: {
-              color: c.earth,
-              minZoom: 16,
-              translate: [2, 3],
-              translateAnchor: "viewport",
-            },
-          }),
-          brickRoofs: renderPass({
-            placement: { above: "buildings.flat.fill" },
-            feature: "building",
-            renderer: "fill",
-            selector: polygon,
-            style: {
-              pattern: "stw-brick",
-              minZoom: 17,
-              opacity: zoom.linear([
-                [17, 0],
-                [18, 0.28],
-                [22, 0.4],
               ]),
             },
           }),
@@ -1102,35 +1098,30 @@ export const superTileWorld = bindCommunityMapTheme(
           ]),
         ),
       ),
-      vegetation: withRenderStack(
-        vegetation({
-          mode: "flat",
-          flat: { minZoom: 17, opacity: 0, strokeOpacity: 0 },
-        }),
-        {
-          pixelTrees: renderPass({
-            placement: { above: "vegetation.trees" },
-            requirements: ["vegetation"],
-            renderer: "symbol",
-            style: {
-              minZoom: 17,
-              zOrder: "viewport-y",
-              icon: {
-                image: "stw-tree",
-                size: zoom.linear([
-                  [17, 0.85],
-                  [20, 1.5],
-                  [22, 1.9],
-                ]),
-                anchor: "bottom",
-                padding: 3,
-                allowOverlap: false,
-                ignorePlacement: false,
-              },
-            },
-          }),
+      vegetation: vegetation({
+        mode: "3d",
+        fallback: "none",
+        threeDimensional: {
+          finish: "smooth",
+          edges: 0,
+          barkColor: c.earth,
+          broadleafColors: ["#329A57", "#51B95B", "#7DD366", "#A1E17B"],
+          coniferColors: ["#28875C", "#3AA56A", "#65C47A"],
+          palmColors: ["#3BA963", "#69C766", "#9AD974"],
+          hedgeColors: ["#3AA15A", "#64BD61"],
+          heightScale: 1,
+          crownScale: 1.08,
+          forms: {
+            round: { models: ["stw-round"] },
+            open: { models: ["stw-open"] },
+            tall: { models: ["stw-tall"] },
+            conifer: { models: ["stw-conifer"] },
+            columnar: { models: ["stw-columnar"] },
+            palm: { models: ["stw-palm"] },
+          },
+          unknownForms: { round: 6, open: 3, tall: 1 },
         },
-      ),
+      }),
       aeroways: aeroways({
         area: area(c.mint, 9),
         runway: {
