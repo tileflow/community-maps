@@ -25,5 +25,5 @@ the bell silhouette, tier or frond arrangement instead of reverting to generic t
 The bell forms were studied from [Super Bell Hill gameplay](https://www.youtube.com/watch?v=k9zyhiBKqw4)
 and [in-game screenshots](https://www.nintendocastle.com/super-mario-3d-world-stamps/world-1/):
 a continuous domed crown, a flared collar, alternating horizontal bands and a pale trunk.
-The reference images and game models are not included. The map paints the broadleaf forms gold
+The reference images and game models are not included. The map gives broadleaf forms a predominantly green palette with occasional yellow accents,
 and keeps evergreen and palm forms green.

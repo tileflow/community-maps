@@ -9,8 +9,8 @@ The map declares its own icons, fonts and models. All artwork belongs to this ma
 Six original GLB forms have smooth normals and matching near/far geometry: a bell crown,
 a broader bell, a taller bell, a three-tier evergreen, a narrow column and an arched palm.
 The bell profile follows the domed top, flared lower rim, broad horizontal bands and pale trunk
-visible in Super Bell Hill gameplay. Golden foliage makes that reference immediately readable;
-conifers and palms retain green palettes. All geometry is authored here, without extracted models.
+visible in Super Bell Hill screenshots. Foliage is predominantly green, with lime-to-yellow
+accents among the bell crowns; conifers and palms retain green palettes. All geometry is authored here, without extracted models.
 They use the SDK's instanced vegetation renderer and shared sunlight/shadows. Near meshes use
 120–368 triangles; far meshes use 60–120. There are no leaf textures or billboard planes.
 See [model sources](assets/models/README.md) for reproducible generation and budgets.

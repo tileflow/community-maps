@@ -1106,7 +1106,7 @@ export const superTileWorld = bindCommunityMapTheme(
           finish: "smooth",
           edges: 0,
           barkColor: "#EBDDC4",
-          broadleafColors: ["#EDB432", "#F6C23D", "#FFD24D", "#FFDC62"],
+          broadleafColors: ["#3AA95A", "#4DB65B", "#6DC351", "#FFD24D"],
           coniferColors: ["#28875C", "#3AA56A", "#65C47A"],
           palmColors: ["#3BA963", "#69C766", "#9AD974"],
           hedgeColors: ["#3AA15A", "#64BD61"],
