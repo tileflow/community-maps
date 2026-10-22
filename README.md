@@ -7,8 +7,8 @@ icons, patterns, fonts, and a ready-to-preview configuration.
 
 | Cyberpunk                                                                                                      | Terminal                                                                                 | Super Tile World                                                                                                  |
 | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| [![Cyberpunk: electric blue, pink, and yellow streets in Madrid](maps/cyberpunk/preview.webp)](maps/cyberpunk) | [![Terminal: a phosphor-green map of Madrid](maps/terminal/preview.webp)](maps/terminal) | [![Super Tile World: a pixel-art overworld in Madrid](maps/super-tile-world/preview.webp)](maps/super-tile-world) |
-| A city of electric outlines, glowing routes, and destination beacons.                                          | Monochrome green cartography with scanlines and crisp uppercase labels.                  | A cartridge world of golden routes, pixel sprites, and layered shores.                                            |
+| [![Cyberpunk: electric blue, pink, and yellow streets in Madrid](maps/cyberpunk/preview.webp)](maps/cyberpunk) | [![Terminal: a phosphor-green map of Madrid](maps/terminal/preview.webp)](maps/terminal) | [![Super Tile World: a toy-like 3D overworld in Madrid](maps/super-tile-world/preview.webp)](maps/super-tile-world) |
+| A city of electric outlines, glowing routes, and destination beacons.                                          | Monochrome green cartography with scanlines and crisp uppercase labels.                  | A toy world of varied rounded trees, striped bells, sunlit buildings, and golden routes.                                            |
 
 Previews show Madrid. Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright).
 See [preview and asset attribution](THIRD_PARTY_NOTICES.md).
@@ -34,7 +34,7 @@ Open the local address printed by the CLI. To try Terminal, stop the preview and
 
 ```sh
 npm run preview:terminal
-# Or explore the pixel-art world:
+# Or explore the toy world:
 npm run preview:super-tile-world
 # Or the adventure atlas:
 npm run preview:wildlands
@@ -72,7 +72,7 @@ not published to the npm registry. Choose a full commit SHA from this repository
 `COMMIT_SHA` below, and install it with the compatible Core version:
 
 ```sh
-npm install github:tileflow/community-maps#COMMIT_SHA @tileflow/core@0.1.0-alpha.35
+npm install github:tileflow/community-maps#COMMIT_SHA @tileflow/core@0.1.0-alpha.40
 ```
 
 The Git installation builds the package. Use a Node.js environment with install scripts enabled.
@@ -91,9 +91,9 @@ export default defineMap({
 });
 ```
 
-Use `terminal` for the green-screen map or `superTileWorld` for the pixel-art overworld. All maps are immutable shared definitions; extend them
+Use `terminal` for the green-screen map or `superTileWorld` for the toy-like 3D overworld. All maps are immutable shared definitions; extend them
 with `defineMap` instead of mutating them. The package also exports `cyberpunkFonts`, `cyberpunkIcons`,
-`terminalFonts`, `terminalIcons`, `superTileWorldFonts`, and `superTileWorldIcons` for explicit asset composition.
+`terminalFonts`, `terminalIcons`, `superTileWorldFonts`, `superTileWorldIcons`, and `superTileWorldModels` for explicit asset composition.
 
 The [Tileflow SDK documentation](https://github.com/tileflow/tileflow-sdk#readme) covers CLI and
 framework integration. Use the same Core version in the map package and its consumer.

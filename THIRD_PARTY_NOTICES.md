@@ -32,9 +32,16 @@ Upstream: <https://github.com/sevmeyer/oxanium>, revision
 
 ## Preview images and map data
 
-The Terminal and Super Tile World `preview.webp` images are existing Tileflow captures of the
-original designs, relabeled for this collection. They show Madrid and are not newly generated
-captures of the current Tileflow World service.
+The Terminal `preview.webp` image is an existing Tileflow capture of the original design,
+relabeled for this collection. It shows Madrid and is not a newly generated capture of the
+current Tileflow World service.
+
+The Super Tile World preview was captured on 2026-10-22 from its Madrid scene with
+the development SDK containing procedural building surfaces: center −3.6914, 40.4178,
+zoom 16.6, pitch 48° and bearing −18°. It shows the original rounded tree geometry,
+brick joints, painted building cornices, soft lawn bands and cream shores rendered through the SDK 3D scene with
+Tileflow World data. This is a renderer capture, not an AI-generated illustration.
+Visible map attribution is retained.
 
 The Cyberpunk preview is a new capture of its `gran-via` scene, rendered on 2026-10-18 with Tileflow
 World data at zoom 16.5, bearing 0 and pitch 0, with the static flat-tree fallback. Its blue-grey crossing sprite is an adaptation of
@@ -48,10 +55,12 @@ geographic data and other services.
 
 ## Super Tile World artwork and fonts
 
-The `superTileWorld` map, sixteen SVG sprites, and seven SVG patterns are original Tileflow code
-and artwork. Its pixel-art overworld takes visual inspiration from _Super Mario World_. This
+The `superTileWorld` map, sixteen SVG sprites, seven SVG patterns and six original 3D tree forms
+(with matching far models) are original Tileflow code and artwork. Its icons take visual
+inspiration from _Super Mario World_; its rounded toy-world volumes are inspired by
+_Super Mario 3D World_. This
 package includes no extracted game sprites, Nintendo logo, source map, or downloaded icon artwork.
-Super Mario World is a Nintendo trademark; this independent showcase has no affiliation with or
+Super Mario World and Super Mario 3D World are Nintendo trademarks; this independent showcase has no affiliation with or
 endorsement from Nintendo. The asset research references are recorded in
 `maps/super-tile-world/assets/README.md`.
 

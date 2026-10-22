@@ -7,12 +7,19 @@ import {
 import assert from "node:assert/strict";
 import { readdir } from "node:fs/promises";
 import test from "node:test";
-import { resolveMap, tileflowWorldV1Schema } from "@tileflow/core";
+import {
+  decodeTileflowTreeModel,
+  resolveMap,
+  tileflowWorldV1Schema,
+} from "@tileflow/core";
 import { createStyleWithInspection } from "@tileflow/core/build";
+import { prepareTileflowMapTreeModels } from "@tileflow/dev/icons";
+import { fileURLToPath } from "node:url";
 import {
   superTileWorld,
   superTileWorldFonts,
   superTileWorldIcons,
+  superTileWorldModels,
 } from "../src";
 
 const iconIds = [
@@ -40,8 +47,19 @@ const iconIds = [
   "stw-warp-pipe",
   "stw-water",
 ] as const;
+const root = fileURLToPath(new URL("../", import.meta.url));
+const preparedTrees = await prepareTileflowMapTreeModels(
+  [superTileWorldModels],
+  {
+    cwd: root,
+    baseDirectory: root,
+    configPath: `${root}/maps/super-tile-world/tileflow.config.ts`,
+    target: "local",
+  },
+);
 const result = createStyleWithInspection(superTileWorld, {
   preparedAssets: {
+    models: preparedTrees.models,
     icons: { ids: iconIds, sprite: "/tileflow/icons/super-tile-world/sprite" },
   },
 });
@@ -172,6 +190,7 @@ test("Super Tile World compiles as a standalone game board with local sprites an
   assert.equal(Object.isFrozen(superTileWorld), true);
   assert.deepEqual(resolved.icons, [superTileWorldIcons]);
   assert.deepEqual(resolved.fonts, [superTileWorldFonts]);
+  assert.deepEqual(resolved.models, [superTileWorldModels]);
   assert.equal(resolved.glyphs, undefined);
   assert.deepEqual(validateStyleMin(compiled.style as never), []);
   assert.equal(compiled.style.metadata?.["tileflow:extends"], undefined);
@@ -191,7 +210,10 @@ test("Super Tile World compiles as a standalone game board with local sprites an
   const serialized = JSON.stringify(compiled.style);
   for (const id of serialized.matchAll(/"(stw-[a-z-]+)"/gu)) {
     assert.ok(
-      new Set<string>(packagedIds).has(id[1]!),
+      new Set<string>([
+        ...packagedIds,
+        ...Object.keys(preparedTrees.models),
+      ]).has(id[1]!),
       `Missing local sprite ${id[1]}`,
     );
   }
@@ -206,7 +228,7 @@ function assertBefore(underlay: string, overlay: string): void {
   );
 }
 
-test("Super Tile World gives terrain and buildings flat platform depth in semantic order", () => {
+test("Super Tile World keeps portable footprints beneath the SDK scene in semantic order", () => {
   assert.equal(compiled.style.terrain, undefined);
   assert.equal(
     compiled.style.layers.some(({ type }) => type === "fill-extrusion"),
@@ -218,13 +240,9 @@ test("Super Tile World gives terrain and buildings flat platform depth in semant
   assertBefore("water.render.coastInk", "water.render.coastSand");
   assertBefore("water.render.coastSand", "water.bodies.fill");
   assertBefore("water.bodies.fill", "water.render.waves");
-  assertBefore("buildings.render.platformSides", "buildings.flat.fill");
-  assertBefore("buildings.flat.fill", "buildings.render.brickRoofs");
+  assertBefore("buildings.render.districtBlocks", "buildings.flat.fill");
 
-  for (const target of [
-    "land.render.parkCliff",
-    "buildings.render.platformSides",
-  ]) {
+  for (const target of ["land.render.parkCliff"]) {
     const layer = layerFor(target);
     assert.equal(layer.type, "fill");
     assert.equal(evaluate(layer, "fill-translate-anchor", 17), "viewport");
@@ -233,7 +251,7 @@ test("Super Tile World gives terrain and buildings flat platform depth in semant
   }
 });
 
-test("Super Tile World hands the overview to district blocks before close texture and trees", () => {
+test("Super Tile World hands district blocks to footprints and level dots to close coin trails", () => {
   const district = layerFor("buildings.render.districtBlocks");
   const detail = layerFor("buildings.flat.fill");
   assert.equal(district.maxzoom, detail.minzoom);
@@ -249,18 +267,28 @@ test("Super Tile World hands the overview to district blocks before close textur
 
   const levelDots = layerFor("roads.render.levelDots");
   const coins = layerFor("roads.render.coinTrail");
-  const bricks = layerFor("buildings.render.brickRoofs");
-  const trees = layerFor("vegetation.render.pixelTrees");
   assert.ok(levelDots.maxzoom! <= coins.minzoom!);
   assert.equal(visibleAt(coins, 14), false);
   assert.equal(visibleAt(coins, 18), true);
-  assert.equal(visibleAt(bricks, 14), false);
-  assert.equal(visibleAt(trees, 14), false);
-  assert.equal(visibleAt(trees, 18), true);
   assert.equal(coins.layout?.["symbol-placement"], "line");
   assert.equal(coins.layout?.["icon-image"], "stw-coin");
-  assert.equal(trees.layout?.["icon-image"], "stw-tree");
-  assert.equal(trees.layout?.["symbol-z-order"], "viewport-y");
+
+  const coinFilter = featureFilter(coins.filter as never, `${coins.id}.filter`);
+  for (const roadClass of ["path", "pedestrian"]) {
+    for (const brunnel of [undefined, "bridge", "tunnel"]) {
+      assert.equal(
+        coinFilter.filter(
+          { zoom: 18 },
+          {
+            type: 2,
+            properties: { class: roadClass, ...(brunnel ? { brunnel } : {}) },
+          } as never,
+        ),
+        brunnel !== "tunnel",
+        `Coin trail on ${roadClass}/${brunnel ?? "surface"}`,
+      );
+    }
+  }
 });
 
 test("Super Tile World keeps sprites and names coupled and selects them by real POI category", () => {
@@ -348,4 +376,39 @@ test("Super Tile World respects producer eligibility before admitting secondary 
     assert.equal(acceptsPoi(category, 21, { rank: 6 }), false);
     assert.equal(acceptsPoi(category, 21, { rank: 5, sizeRank: 17 }), false);
   }
+});
+
+// Model import is the real public asset pipeline: test geometry and fallback, not a screenshot shape.
+test("Super Tile World ships valid near and far tree meshes without a sprite fallback", () => {
+  assert.equal(Object.keys(preparedTrees.models).length, 6);
+  for (const [id, model] of Object.entries(preparedTrees.models)) {
+    for (const level of ["near", "far"] as const) {
+      const decoded = decodeTileflowTreeModel(model[level], level);
+      assert.ok(decoded, `${id} has a valid ${level} model`);
+      assert.ok(decoded.indices.length / 3 <= (level === "far" ? 120 : 1000));
+      assert.ok(decoded.positions.every(Number.isFinite));
+      assert.ok(decoded.parts.includes(0), `${id} retains its trunk`);
+    }
+  }
+  const display = compiled.style.metadata?.["tileflow:vegetation-display"] as {
+    mode: string;
+    fallback: string;
+  };
+  assert.equal(display.mode, "3d");
+  assert.equal(display.fallback, "none");
+  assert.ok(
+    !compiled.style.layers.some(
+      (layer) => layer.layout?.["icon-image"] === "stw-tree",
+    ),
+  );
+});
+
+test("Super Tile World does not request the pier outline layer absent from current World", () => {
+  assert.ok(
+    !compiled.style.layers.some(
+      (layer) =>
+        (layer as unknown as { "source-layer"?: string })["source-layer"] ===
+        "transportation_outline",
+    ),
+  );
 });

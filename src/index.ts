@@ -15,4 +15,5 @@ export { terminalFonts, terminalIcons } from "../maps/terminal/assets";
 export {
   superTileWorldFonts,
   superTileWorldIcons,
+  superTileWorldModels,
 } from "../maps/super-tile-world/assets";

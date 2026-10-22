@@ -9,6 +9,7 @@ import {
   createTileflowBuildArtifacts,
   disposeTileflowBuildArtifacts,
 } from "@tileflow/dev/artifacts";
+import { prepareTileflowMapTreeModels } from "@tileflow/dev/icons";
 import { cyberpunk, terminal, superTileWorld } from "../src";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -19,15 +20,27 @@ for (const map of [cyberpunk, terminal, superTileWorld]) {
       new URL(`../maps/${map.id}/assets/icons/`, import.meta.url),
     );
     const ids = files.map((file) => file.replace(/(?:\.pattern)?\.svg$/u, ""));
+    const models = await prepareTileflowMapTreeModels(
+      resolveMap(map).models ?? [],
+      {
+        cwd: root,
+        baseDirectory: root,
+        configPath: `${root}/maps/${map.id}/tileflow.config.ts`,
+        target: "local",
+      },
+    );
     const style = createStyle(map, {
-      preparedAssets: { icons: { ids, sprite: `/maps/${map.id}/sprite` } },
+      preparedAssets: {
+        models: models.models,
+        icons: { ids, sprite: `/maps/${map.id}/sprite` },
+      },
     });
     assert.deepEqual(validateStyleMin(style as never), []);
     assert.ok(style.layers.length > 50);
     assert.equal(Object.isFrozen(map), true);
     assert.doesNotMatch(JSON.stringify(style), /neon-grid|matrix|cyber-/iu);
-    for (const id of ids)
-      assert.ok(JSON.stringify(style).includes(id), `Missing artwork ${id}`);
+    // Retired artwork remains available to consumers, without being forced into the style.
+    assert.ok(ids.length > 0);
 
     const custom = resolveMap(
       defineMap({

@@ -38,7 +38,7 @@
     "prepare": "npm run build",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test test/*.test.ts",
-    "check": "npm run typecheck && npm run build && npm test && npm run validate:maps",
+    "check": "npm run check:models && npm run typecheck && npm run build && npm test && npm run validate:maps",
     "validate:maps": "tileflow validate --config maps/cyberpunk/tileflow.config.ts && tileflow validate --config maps/terminal/tileflow.config.ts && tileflow validate --config maps/super-tile-world/tileflow.config.ts && tileflow validate --config maps/wildlands/tileflow.config.ts",
     "preview:cyberpunk": "tileflow preview --config maps/cyberpunk/tileflow.config.ts",
     "preview:terminal": "tileflow preview --config maps/terminal/tileflow.config.ts",
@@ -47,17 +47,18 @@
     "preview:super-tile-world": "tileflow preview --config maps/super-tile-world/tileflow.config.ts",
     "build:super-tile-world": "tileflow build --config maps/super-tile-world/tileflow.config.ts --out .tileflow/build/super-tile-world",
     "preview:wildlands": "tileflow preview --config maps/wildlands/tileflow.config.ts",
-    "build:wildlands": "tileflow build --config maps/wildlands/tileflow.config.ts --out .tileflow/build/wildlands"
+    "build:wildlands": "tileflow build --config maps/wildlands/tileflow.config.ts --out .tileflow/build/wildlands",
+    "check:models": "node maps/super-tile-world/assets/build-trees.mjs --check"
   },
   "peerDependencies": {
-    "@tileflow/core": ">=0.1.0-alpha.35 <0.1.0-beta.0"
+    "@tileflow/core": ">=0.1.0-alpha.40 <0.1.0-beta.0"
   },
   "devDependencies": {
     "@maplibre/maplibre-gl-style-spec": "26.4.2",
-    "@tileflow/core": "0.1.0-alpha.35",
-    "@tileflow/dev": "0.1.0-alpha.32",
+    "@tileflow/core": "0.1.0-alpha.40",
+    "@tileflow/dev": "0.1.0-alpha.37",
     "@types/node": "25.9.2",
-    "tileflow": "0.1.0-alpha.13",
+    "tileflow": "0.1.0-alpha.17",
     "tsup": "8.5.1",
     "tsx": "4.23.12",
     "typescript": "6.0.3"
