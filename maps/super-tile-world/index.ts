@@ -1113,14 +1113,14 @@ export const superTileWorld = bindCommunityMapTheme(
           heightScale: 1,
           crownScale: 1.08,
           forms: {
-            round: { models: ["stw-round"] },
-            open: { models: ["stw-open"] },
+            round: { models: ["stw-round", "stw-open"] },
+            open: { models: ["stw-open", "stw-round"] },
             tall: { models: ["stw-tall"] },
             conifer: { models: ["stw-conifer"] },
             columnar: { models: ["stw-columnar"] },
             palm: { models: ["stw-palm"] },
           },
-          unknownForms: { round: 6, open: 3, tall: 1 },
+          unknownForms: { round: 5, open: 3, tall: 2 },
         },
       }),
       aeroways: aeroways({

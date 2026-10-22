@@ -7,16 +7,19 @@ The normal World geography remains interactive; colors use the published `buildi
 
 The map declares its own icons, fonts and models. All artwork belongs to this map directory.
 Six original GLB forms have smooth normals and matching near/far geometry: a bell crown,
-a broader bell, a taller bell, a three-tier evergreen, a narrow column and an arched palm.
+a lobed deciduous crown, a layered leafy crown, a three-tier evergreen, a narrow column and an arched palm.
 The bell profile follows the domed top, flared lower rim, broad horizontal bands and pale trunk
 visible in Super Bell Hill screenshots. Foliage is predominantly green, with lime-to-yellow
-accents among the bell crowns; conifers and palms retain green palettes. All geometry is authored here, without extracted models.
+accents among the bell crowns; conifers and palms retain green palettes. The deciduous crown references 3D World’s rounded
+foliage; the layered crown references 3D Land’s overlapping leaf skirts. All geometry is authored here, without extracted models.
 They use the SDK's instanced vegetation renderer and shared sunlight/shadows. Near meshes use
-120–368 triangles; far meshes use 60–120. There are no leaf textures or billboard planes.
+120–480 triangles; far meshes use 60–120. There are no leaf textures or billboard planes.
 See [model sources](assets/models/README.md) for reproducible generation and budgets.
 
 Trees come from geographic points and rows, following any supplied form or species. Unknown
-forms favor bell crowns (6:3:1 round/open/tall). Grass polygons are not permission to scatter
+forms use a 5:3:2 round/open/tall mix. Round and open forms each choose between bell and
+lobed crowns, while tall forms use layered foliage; stable model variants keep nearby trees
+from sharing one silhouette even when their data gives the same broadleaf form. Grass polygons are not permission to scatter
 fictional trees. Missing tree data leaves quiet ground detail. The meadow and forest patterns
 contain only grass, flowers and leaf marks, never miniature trees or hills. The retained
 `stw-tree` asset is available to existing consumers but is not referenced by this design.

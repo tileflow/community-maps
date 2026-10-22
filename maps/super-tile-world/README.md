@@ -1,6 +1,6 @@
 # Super Tile World
 
-A toy-like 3D overworld with striped bell trees, sunlit buildings, layered shores, golden routes,
+A toy-like 3D overworld with striped bells, rounded and layered trees, sunlit buildings, layered shores, golden routes,
 and arcade lettering. Original Tileflow artwork, inspired by playful platform-game worlds.
 
 ![Super Tile World in Madrid](preview.webp)

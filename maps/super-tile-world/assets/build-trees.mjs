@@ -58,14 +58,30 @@ function trunk(m, height, radius, sides) {
 }
 // Lathed crowns keep one uninterrupted silhouette, with broad bands and a flared rim.
 // Adjacent bands share positions/normals but retain their own vertex shade at the seam.
-function silhouette(m, profile, sides, width = 1, banded = false, far = false) {
+function silhouette(
+  m,
+  profile,
+  sides,
+  width = 1,
+  banded = false,
+  far = false,
+  lobes = 0,
+) {
   const normalAt = (i, angle) => {
     if (profile[i][1] === 0) return [0, i === 0 ? -1 : 1, 0];
     const before = profile[Math.max(0, i - 1)],
       after = profile[Math.min(profile.length - 1, i + 1)];
     const slope =
       ((after[1] - before[1]) * width) / Math.max(0.001, after[0] - before[0]);
-    return [Math.cos(angle), -slope, Math.sin(angle)];
+    const ripple = lobes ? (far ? 0.05 : 0.09) : 0;
+    const phase = angle * lobes + profile[i][0] * 1.4;
+    const tangent =
+      (-ripple * lobes * Math.sin(phase)) / (1 + ripple * Math.cos(phase));
+    return [
+      Math.cos(angle) + tangent * Math.sin(angle),
+      -slope,
+      Math.sin(angle) - tangent * Math.cos(angle),
+    ];
   };
   for (let j = 1; j < profile.length; j++) {
     const low = profile[j - 1],
@@ -75,9 +91,11 @@ function silhouette(m, profile, sides, width = 1, banded = false, far = false) {
       Array.from({ length: sides }, (_, i) => {
         const angle = (2 * Math.PI * i) / sides;
         const [y, radius] = profile[row];
-        const scallop = far
-          ? 1
-          : 1 + 0.025 * Math.cos(angle * 5) * Math.max(0, (0.48 - y) / 0.25);
+        const scallop = lobes
+          ? 1 + (far ? 0.05 : 0.09) * Math.cos(angle * lobes + y * 1.4)
+          : far
+            ? 1
+            : 1 + 0.025 * Math.cos(angle * 5) * Math.max(0, (0.48 - y) / 0.25);
         return vertex(
           m,
           [
@@ -115,7 +133,7 @@ function tree(form, far) {
       false,
       far,
     );
-  if (["round", "open", "tall"].includes(form)) {
+  if (form === "round") {
     // The collar and domed, almost cylindrical crown are the signature of a bell tree.
     const profile = [
       [0.24, 0],
@@ -129,13 +147,52 @@ function tree(form, far) {
       [0.95, 0.13],
       [1, 0],
     ];
+    silhouette(leaves, profile, far ? 6 : 20, 1, true, far);
+  } else if (form === "open") {
+    // A broad, lobed pear crown: the deciduous silhouette from 3D World.
+    // Its continuous outline stays distinct after the SDK normalizes crown width.
     silhouette(
       leaves,
-      profile,
-      far ? 6 : 20,
-      form === "open" ? 1.2 : form === "tall" ? 0.76 : 1,
-      true,
+      [
+        [0.27, 0],
+        [0.3, 0.22],
+        [0.39, 0.32],
+        [0.51, 0.35],
+        [0.63, 0.32],
+        [0.73, 0.29],
+        [0.82, 0.24],
+        [0.92, 0.16],
+        [1, 0],
+      ],
+      far ? 6 : 24,
+      1,
+      false,
       far,
+      5,
+    );
+  } else if (form === "tall") {
+    // Three soft overlapping leaf skirts, informed by 3D Land's layered trees.
+    // The stepped profile is geometry, not just bands painted on a bell.
+    silhouette(
+      leaves,
+      [
+        [0.26, 0],
+        [0.27, 0.24],
+        [0.34, 0.34],
+        [0.43, 0.36],
+        [0.5, 0.27],
+        [0.51, 0.29],
+        [0.65, 0.32],
+        [0.73, 0.22],
+        [0.74, 0.24],
+        [0.9, 0.19],
+        [1, 0],
+      ],
+      far ? 5 : 24,
+      1,
+      false,
+      far,
+      6,
     );
   } else if (form === "conifer") {
     const profile = [

@@ -10,8 +10,8 @@ pipeline validates and packs both levels into the style, so there are no per-tre
 | Form | Near triangles | Far triangles |
 | --- | ---: | ---: |
 | Round bell | 368 | 120 |
-| Broad bell | 368 | 120 |
-| Tall bell | 368 | 120 |
+| Lobed deciduous crown | 384 | 108 |
+| Layered leafy crown | 480 | 114 |
 | Conifer | 248 | 84 |
 | Columnar | 208 | 84 |
 | Palm | 120 | 60 |
@@ -27,3 +27,11 @@ and [in-game screenshots](https://www.nintendocastle.com/super-mario-3d-world-st
 a continuous domed crown, a flared collar, alternating horizontal bands and a pale trunk.
 The reference images and game models are not included. The map gives broadleaf forms a predominantly green palette with occasional yellow accents,
 and keeps evergreen and palm forms green.
+
+The other broadleaf silhouettes were studied from the
+[3D World deciduous tree](https://www.mariowiki.com/File:SM3DW_Asset_Model_Tree_(Deciduous).png)
+and [3D Land layered tree](https://www.mariowiki.com/File:SM3DL_Asset_Model_Tree.png).
+Their distinct crown profiles survive the SDK's height/width normalization. Round and open
+forms each select between the bell and lobed model, so variation also appears within trees
+with the same geographic form; tall forms use the leafy tiers. These are original meshes,
+not copies of the referenced game assets.
