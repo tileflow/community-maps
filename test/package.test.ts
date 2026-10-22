@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile as execFileCallback } from "node:child_process";
-import { mkdtemp, mkdir, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -9,6 +9,9 @@ import { promisify } from "node:util";
 
 const execFile = promisify(execFileCallback);
 const root = fileURLToPath(new URL("../", import.meta.url));
+const { devDependencies } = JSON.parse(
+  await readFile(join(root, "package.json"), "utf8"),
+);
 
 test(
   "a packed installation builds all community maps without this checkout",
@@ -104,8 +107,8 @@ test(
           "--no-fund",
           "--package-lock=false",
           archive,
-          "@tileflow/core@0.1.0-alpha.38",
-          "@tileflow/dev@0.1.0-alpha.35",
+          `@tileflow/core@${devDependencies["@tileflow/core"]}`,
+          `@tileflow/dev@${devDependencies["@tileflow/dev"]}`,
         ],
         { cwd, maxBuffer: 2_000_000 },
       );

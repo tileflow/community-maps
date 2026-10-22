@@ -272,6 +272,23 @@ test("Super Tile World hands district blocks to footprints and level dots to clo
   assert.equal(visibleAt(coins, 18), true);
   assert.equal(coins.layout?.["symbol-placement"], "line");
   assert.equal(coins.layout?.["icon-image"], "stw-coin");
+
+  const coinFilter = featureFilter(coins.filter as never, `${coins.id}.filter`);
+  for (const roadClass of ["path", "pedestrian"]) {
+    for (const brunnel of [undefined, "bridge", "tunnel"]) {
+      assert.equal(
+        coinFilter.filter(
+          { zoom: 18 },
+          {
+            type: 2,
+            properties: { class: roadClass, ...(brunnel ? { brunnel } : {}) },
+          } as never,
+        ),
+        brunnel !== "tunnel",
+        `Coin trail on ${roadClass}/${brunnel ?? "surface"}`,
+      );
+    }
+  }
 });
 
 test("Super Tile World keeps sprites and names coupled and selects them by real POI category", () => {

@@ -72,7 +72,7 @@ not published to the npm registry. Choose a full commit SHA from this repository
 `COMMIT_SHA` below, and install it with the compatible Core version:
 
 ```sh
-npm install github:tileflow/community-maps#COMMIT_SHA @tileflow/core@0.1.0-alpha.38
+npm install github:tileflow/community-maps#COMMIT_SHA @tileflow/core@0.1.0-alpha.40
 ```
 
 The Git installation builds the package. Use a Node.js environment with install scripts enabled.

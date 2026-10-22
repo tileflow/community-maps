@@ -1,11 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="256" viewBox="0 0 128 256">
-  <title>Meadow grass and tiny flowers</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <title>Rounded lawn patches and small flower clusters</title>
+  <g fill="#D7EE94" fill-opacity=".20">
+    <path d="M0 24C64 24 64 44 128 44S192 24 256 24V72C192 72 192 92 128 92S64 72 0 72Z"/>
+    <path d="M38 151c-19-6-31 3-30 17s23 22 43 18 33-13 28-25-23-17-41-10Z"/>
+    <path d="M160 161c-22 7-26 28-8 37s58 1 67-13-4-29-23-28-21-1-36 4Z"/>
+  </g>
   <g fill="none" stroke="#82B968" stroke-width="2" stroke-linecap="round">
-    <path d="M105 41l-2-4m5 4v-7m3 7l2-3M94 90l-2-4m5 4v-7m3 7l2-3M54 217l-2-4m5 4v-7m3 7l2-3M33 176l-2-4m5 4v-7m3 7l2-3"/>
+    <path d="M105 114l-2-4m5 4v-7m3 7l2-3M221 208l-2-4m5 4v-7m3 7l2-3M42 223l-2-4m5 4v-7m3 7l2-3"/>
   </g>
-  <g fill="#FFF7D4">
-    <circle cx="92" cy="122" r="2"/><circle cx="89" cy="125" r="2"/><circle cx="95" cy="125" r="2"/><circle cx="92" cy="128" r="2"/>
-    <circle cx="24" cy="216" r="2"/><circle cx="21" cy="219" r="2"/><circle cx="27" cy="219" r="2"/><circle cx="24" cy="222" r="2"/>
-  </g>
-  <g fill="#F5CC6B"><circle cx="92" cy="125" r="1.5"/><circle cx="24" cy="219" r="1.5"/></g>
+  <defs>
+    <g id="daisy">
+      <g fill="#FFF7D4"><circle cy="-3" r="2.2"/><circle cx="-3" r="2.2"/><circle cx="3" r="2.2"/><circle cy="3" r="2.2"/></g>
+      <circle r="1.7" fill="#F3CA55"/>
+    </g>
+    <g id="buttercup">
+      <g fill="#F9DF79"><circle cy="-2.5" r="2"/><circle cx="-2.5" r="2"/><circle cx="2.5" r="2"/><circle cy="2.5" r="2"/></g>
+      <circle r="1.4" fill="#F0B94E"/>
+    </g>
+  </defs>
+  <use href="#daisy" x="59" y="68"/><use href="#daisy" x="70" y="73"/>
+  <use href="#buttercup" x="63" y="81"/>
+  <use href="#daisy" x="182" y="211"/><use href="#daisy" x="193" y="207"/>
+  <use href="#buttercup" x="194" y="219"/>
 </svg>

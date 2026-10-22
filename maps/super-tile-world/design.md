@@ -5,6 +5,14 @@ cheerful colors of Super Mario 3D World. It keeps its original golden routes, ar
 layered shores and destination icons, while giving the landscape real three-dimensional trees.
 The normal World geography remains interactive; colors use the published `building_tone` field.
 
+Ground decoration follows the same toy scale: broad mown bands on grass, rounded patches and
+two small three-flower clusters per meadow tile. Translucent pattern shapes preserve the
+underlying park/grass colors; bands enter mapped grass at z11. Urban land is warm cream
+(`#EFE4C2`), while building colors and the blue water fill stay unchanged. Rivers and lakes
+have an earth outer edge, a cream bank and a soft turquoise waterline, scaled with zoom.
+Mapped sand and rock share low-contrast horizontal strata; rock uses warm ochre rather than
+the lavender reserved for destinations. All details follow existing geographic polygons.
+
 The map declares its own icons, fonts and models. All artwork belongs to this map directory.
 Six original GLB forms have smooth normals and matching near/far geometry: a bell crown,
 a lobed deciduous crown, a layered leafy crown, a three-tier evergreen, a narrow column and an arched palm.
@@ -34,7 +42,12 @@ footprints/heights, sun lighting, a 1 m exterior corner radius, restrained edge 
 contact shadows and subtle brightness variation (0.06). Warm apricot blocks, red civic buildings,
 purple major destinations and blue industry keep the semantic palette readable. Architectural
 models use cream surfaces, red roofs, gold accents and blue glass. Ordinary buildings retain a
-single material color: separate wall/roof colors would require a future public SDK capability.
+single base color, with procedural brick joints on walls, a quieter square grid on roofs and a
+light cornice band. The oversized 10 × 5 m bricks and low-contrast roof joints preserve the
+toy-like scale. These decorative surfaces require the updated Core surface-material API; they
+add no image textures or brick geometry. Roof grids stay fixed during camera movement, and
+fine detail fades with distance. The cornice changes surface shading without projecting beyond
+the footprint. Separate wall/roof base colors remain outside this design.
 No fictional roof shape or height is inferred when World does not supply one. Translated fake
 building sides and repeated brick overlays have been retired; park edges remain gently raised.
 
@@ -45,6 +58,13 @@ building sides and repeated brick overlays have been retired; park edges remain 
 | 15–16 | Smooth 3D tree forms and buildings when the scene is enabled; street labels and selected destinations. |
 | 17–19 | Pedestrian coin trails, closer tree geometry and supporting destinations. |
 | 20+ | Address detail and larger lettering; decorative coin trails retire. |
+
+Underground roads use fine earth-colored dashes with square-cut ends and no continuous casing.
+Their width is independent of the surface road hierarchy and capped at close zooms, keeping
+parallel tunnel carriageways quiet beneath parks. Major tunnels enter at z13; local tunnels
+wait until z15 or their class's later minimum zoom. Golden routes, level dots and coin trails
+belong to surface roads and bridges; coins never decorate underground paths. Tunnel portals
+are not inferred from tile-clipped line endpoints.
 
 POI icons and names share collision placement. Their selectors retain category, filter ranks 0–5,
 size ranks 0–16 and producer minimum zoom. Before z17, featured categories admit filter ranks

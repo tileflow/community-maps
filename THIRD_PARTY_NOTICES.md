@@ -37,9 +37,11 @@ relabeled for this collection. It shows Madrid and is not a newly generated capt
 current Tileflow World service.
 
 The Super Tile World preview was captured on 2026-10-22 from its Madrid scene with
-Core alpha.38 and Dev alpha.35: center −3.6914, 40.4178, zoom 16.6, pitch 48° and bearing −18°.
-It shows the original rounded tree geometry and buildings rendered through the SDK 3D scene
-with Tileflow World data. Visible map attribution is retained.
+the development SDK containing procedural building surfaces: center −3.6914, 40.4178,
+zoom 16.6, pitch 48° and bearing −18°. It shows the original rounded tree geometry,
+brick joints, painted building cornices, soft lawn bands and cream shores rendered through the SDK 3D scene with
+Tileflow World data. This is a renderer capture, not an AI-generated illustration.
+Visible map attribution is retained.
 
 The Cyberpunk preview is a new capture of its `gran-via` scene, rendered on 2026-10-18 with Tileflow
 World data at zoom 16.5, bearing 0 and pitch 0, with the static flat-tree fallback. Its blue-grey crossing sprite is an adaptation of

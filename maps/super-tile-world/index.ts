@@ -47,13 +47,15 @@ const c = {
   forest: "#43A968",
   mint: "#CEE7A1",
   field: "#D6DF86",
-  town: "#E9E3AB",
+  town: "#EFE4C2",
   cream: "#FFF4CC",
   snow: "#E6F8F5",
   water: "#58BCE0",
   deepWater: "#337DAE",
   foam: "#C3F1F4",
+  shallows: "#8DD9DA",
   sand: "#F6D77A",
+  rock: "#C9A076",
   gold: "#FFD452",
   route: "#FFF0A0",
   orange: "#DDA150",
@@ -108,6 +110,29 @@ function area(
   };
 }
 
+function tunnelTrace(
+  minZoom: number,
+  major = false,
+): TileflowRoadClassStyle["tunnel"] {
+  return {
+    casing: { visible: false },
+    fill: {
+      color: c.earth,
+      minZoom: Math.max(minZoom, major ? 13 : 15),
+      // A narrow underground trace, independent of the surface road's width.
+      width: zoom.linear([
+        [13, 0.8],
+        [17, major ? 1.8 : 1.2],
+        [22, major ? 2.4 : 1.6],
+      ]),
+      opacity: 0.4,
+      dash: [3, 3],
+      cap: "butt",
+      join: "round",
+    },
+  };
+}
+
 function route(
   minZoom: number,
   width: number,
@@ -138,10 +163,7 @@ function route(
   return {
     surface: { casing, fill },
     bridge: { casing: { ...casing, color: c.ink }, fill },
-    tunnel: {
-      casing: { ...casing, opacity: 0.3 },
-      fill: { ...fill, opacity: 0.5, dash: [2, 2] },
-    },
+    tunnel: tunnelTrace(minZoom, major),
   };
 }
 
@@ -160,7 +182,7 @@ function trail(minZoom: number): TileflowRoadClassStyle {
   return {
     surface: { casing: { visible: false }, fill },
     bridge: { casing: { color: c.earth, minZoom, width: 3.5 }, fill },
-    tunnel: { casing: { visible: false }, fill: { ...fill, opacity: 0.4 } },
+    tunnel: tunnelTrace(minZoom),
   };
 }
 
@@ -430,7 +452,7 @@ export const superTileWorld = bindCommunityMapTheme(
             sand: area(c.sand, 6),
             wetland: area("#8DCCA8", 7),
             ice: area(c.snow, 4),
-            rock: area(c.purple, 7),
+            rock: area(c.rock, 7),
           },
           landuse: {
             residential: area(c.town, 9),
@@ -452,6 +474,13 @@ export const superTileWorld = bindCommunityMapTheme(
             placement: { above: "land.background" },
             renderer: "background",
             style: { pattern: "stw-grass", opacity: 0.25 },
+          }),
+          grassBands: renderPass({
+            placement: { above: "land.landcover.grass.fill" },
+            feature: "landcover",
+            renderer: "fill",
+            selector: { kind: "in", field: "class", values: ["grass"] },
+            style: { pattern: "stw-grass", minZoom: 11, opacity: 0.55 },
           }),
           parkCliff: renderPass({
             placement: { below: "land.landcover.urbanPark.fill" },
@@ -507,13 +536,28 @@ export const superTileWorld = bindCommunityMapTheme(
             selector: { kind: "in", field: "class", values: ["sand"] },
             style: { pattern: "stw-sand", minZoom: 7, opacity: 0.6 },
           }),
+          rockStrata: renderPass({
+            placement: { above: "land.landcover.rock.fill" },
+            feature: "landcover",
+            renderer: "fill",
+            selector: { kind: "in", field: "class", values: ["rock"] },
+            style: { pattern: "stw-sand", minZoom: 7, opacity: 0.75 },
+          }),
         },
       ),
       water: withRenderStack(
         water({
           bodies: {
             fill: { color: c.water },
-            outline: { color: c.deepWater, width: 1.5 },
+            outline: {
+              color: c.shallows,
+              width: zoom.linear([
+                [0, 0.6],
+                [7, 1.2],
+                [13, 2.5],
+                [20, 4],
+              ]),
+            },
           },
           bathymetry: { visible: false },
           bathymetryContours: { visible: false },
@@ -566,8 +610,8 @@ export const superTileWorld = bindCommunityMapTheme(
               width: zoom.linear([
                 [0, 2],
                 [7, 5],
-                [13, 9],
-                [20, 12],
+                [13, 12],
+                [20, 18],
               ]),
               join: "round",
             },
@@ -578,12 +622,12 @@ export const superTileWorld = bindCommunityMapTheme(
             renderer: "line",
             selector: polygon,
             style: {
-              color: c.sand,
+              color: c.cream,
               width: zoom.linear([
                 [0, 1],
                 [7, 3],
-                [13, 6],
-                [20, 9],
+                [13, 9],
+                [20, 15],
               ]),
               join: "round",
             },
@@ -609,6 +653,21 @@ export const superTileWorld = bindCommunityMapTheme(
             shadows: true,
             occlusion: true,
             windows: false,
+            surfaces: {
+              walls: {
+                kind: "brick",
+                size: [10, 5],
+                jointWidth: 0.22,
+                contrast: 0.35,
+              },
+              roof: {
+                kind: "tiles",
+                size: 12,
+                jointWidth: 0.18,
+                contrast: 0.14,
+              },
+              cornice: { height: 1.1, contrast: 0.35 },
+            },
             // Keep the same toy palette when World supplies an architectural model.
             modelColors: {
               surface: c.cream,
@@ -739,6 +798,14 @@ export const superTileWorld = bindCommunityMapTheme(
               kind: "all",
               selectors: [
                 { kind: "in", field: "class", values: ["path", "pedestrian"] },
+                {
+                  kind: "not",
+                  selector: {
+                    kind: "in",
+                    field: "brunnel",
+                    values: ["tunnel"],
+                  },
+                },
                 {
                   kind: "not",
                   selector: {
