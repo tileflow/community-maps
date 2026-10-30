@@ -25,13 +25,17 @@ or artwork copied from games or other products without permission.
 ## Check your contribution
 
 ```sh
-npm ci
-npm run check
+npm ci --ignore-scripts --no-audit --no-fund
+npm run check:ci
 ```
+
+Changes reach protected `main` through a pull request. The required `Check maps and package` job
+checks types and model consistency, without building packages or running the full test suite.
 
 Preview your map at city and neighborhood zoom levels. Check label readability, collision behavior,
 icon sizing, and font loading. Include a representative screenshot in your pull request and explain
-which visual behavior changed. Automated checks cover map compilation, MapLibre style validation,
+which visual behavior changed. For package, SDK, or asset-preparation changes, use `npm ci` and
+`npm run check` for full validation, including map compilation, MapLibre style validation,
 font/icon preparation, and use from a packed installation.
 
 The dependency versions and lockfile are intentional. Update them together and verify a clean
