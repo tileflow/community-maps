@@ -35,5 +35,3 @@ The icon/pattern IDs are `cyberpunk-crosswalk`, `cyberpunk-data-grid`,
 and `cyberpunk-sign-{transit,medical,hotel,culture,food,shop,park,landmark,place}`.
 Building interiors use plain translucent fills,
 with luminous contours following their actual geometry. See [artwork notes](assets/README.md).
-
-See [design notes](design.md) for the map’s visual structure.

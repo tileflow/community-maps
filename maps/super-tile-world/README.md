@@ -38,5 +38,3 @@ The ground uses broad, low-contrast grass bands, rounded lawn patches and small 
 flower clusters. Cream banks and a turquoise waterline frame the original blue water;
 warm strata mark mapped sand and rock. A slightly warmer cream urban base separates streets
 and blocks from the parks. These are original seamless SVG patterns, not game textures.
-
-See [design notes](design.md) for the map’s visual structure.

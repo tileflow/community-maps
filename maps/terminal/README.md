@@ -16,5 +16,3 @@ under `assets/`; font origins and licenses are recorded in `assets/fonts/README.
 Exports: `terminal`, `terminalFonts`, `terminalIcons`. Map ID: `terminal`.
 The three icon/pattern IDs are `terminal-crt-scanlines`, `terminal-data-grid`, and
 `terminal-poi-node`.
-
-See [design notes](design.md) for the map’s visual structure.
