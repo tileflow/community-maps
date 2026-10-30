@@ -5,6 +5,8 @@
 - Do not add documentation/planning directories, internal design notes or private repository links.
 - Keep source and artwork attribution, license files, and font provenance with their resources.
 - Do not add private infrastructure, credentials, geographic tile archives, or machine-specific paths.
-- Run `npm run check` before submitting changes. Inspect a rendered preview for visual changes.
+- Land changes through a pull request to protected `main`; the `Check maps and package` check must pass.
+- Run `npm run check:ci` for the fast type and model checks. Use `npm run check` when package, SDK,
+  or asset-preparation changes need full validation. Inspect a rendered preview for visual changes.
 - Keep the root gallery, public exports, map IDs, and README examples synchronized.
 - This package is distributed through GitHub. npm publication is not part of its contribution workflow.

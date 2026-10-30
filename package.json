@@ -38,6 +38,7 @@
     "prepare": "npm run build",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test test/*.test.ts",
+    "check:ci": "npm run typecheck && npm run check:models",
     "check": "npm run check:models && npm run typecheck && npm run build && npm test && npm run validate:maps",
     "validate:maps": "tileflow validate --config maps/cyberpunk/tileflow.config.ts && tileflow validate --config maps/terminal/tileflow.config.ts && tileflow validate --config maps/super-tile-world/tileflow.config.ts && tileflow validate --config maps/wildlands/tileflow.config.ts",
     "preview:cyberpunk": "tileflow preview --config maps/cyberpunk/tileflow.config.ts",
