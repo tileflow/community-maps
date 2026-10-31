@@ -56,10 +56,10 @@
   },
   "devDependencies": {
     "@maplibre/maplibre-gl-style-spec": "26.4.4",
-    "@tileflow/core": "0.1.0-alpha.40",
-    "@tileflow/dev": "0.1.0-alpha.37",
+    "@tileflow/core": "0.1.0-alpha.44",
+    "@tileflow/dev": "0.1.0-alpha.40",
     "@types/node": "25.9.2",
-    "tileflow": "0.1.0-alpha.17",
+    "tileflow": "0.1.0-alpha.19",
     "tsup": "8.5.1",
     "tsx": "4.23.12",
     "typescript": "6.0.3"
