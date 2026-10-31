@@ -55,7 +55,7 @@
     "@tileflow/core": ">=0.1.0-alpha.40 <0.1.0-beta.0"
   },
   "devDependencies": {
-    "@maplibre/maplibre-gl-style-spec": "26.5.0",
+    "@maplibre/maplibre-gl-style-spec": "26.4.4",
     "@tileflow/core": "0.1.0-alpha.40",
     "@tileflow/dev": "0.1.0-alpha.37",
     "@types/node": "25.9.2",
