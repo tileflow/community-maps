@@ -153,8 +153,6 @@ const cyberpunkSemanticColorRoles = {
   ],
   buildings: [
     "active",
-    "businessCorridor",
-    "businessCorridorOutline",
     "civic",
     "commercial",
     "destination",
@@ -210,8 +208,8 @@ const cyberpunkSemanticColorRoles = {
     "wood",
   ],
   landuse: [
-    "businessCorridor",
-    "businessCorridorOutline",
+
+
     "cemetery",
     "civic",
     "commercial",
@@ -302,11 +300,11 @@ const cyberpunkSemanticColors = Object.fromEntries(
 );
 
 const cyberpunkBuildingHeight2d = expr.toNumber(
-  expr.coalesce(expr.get(field("renderHeight")), 0),
+  expr.coalesce(expr.get(field("height")), 0),
   0,
 );
 const cyberpunkBuildingTone2d = expr.coalesce(
-  expr.get(field("buildingTone")),
+  expr.get(field("tone")),
   "",
 );
 const cyberpunkPublishedImportanceTier = expr.toNumber(
@@ -410,12 +408,12 @@ const cyberpunkRoadImportanceTier = expr.case<number>(
   ),
 );
 
-const cyberpunkPoiCategory = expr.coalesce(expr.get(field("poiCategory")), "");
+const cyberpunkPoiCategory = expr.coalesce(expr.get(field("class")), "");
 const cyberpunkPoiFilterRank = expr.toNumber(
-  expr.get(field("poiFilterRank")),
+  expr.get(field("filterrank")),
   6,
 );
-const cyberpunkPoiSizeRank = expr.toNumber(expr.get(field("poiSizeRank")), 17);
+const cyberpunkPoiSizeRank = expr.toNumber(expr.get(field("sizerank")), 17);
 const cyberpunkPoiPlacementPriority = expr.add(
   expr.multiply(cyberpunkPoiFilterRank, 17),
   cyberpunkPoiSizeRank,
@@ -518,32 +516,22 @@ const roadClearanceExtraAtZ15 = expr.toNumber(
   0,
 );
 const roadNeedsStructuralButtCap = expr.any(
-  expr.eq(expr.get(field("brunnel")), "tunnel"),
-  expr.eq(expr.get(field("class")), "steps"),
-  expr.eq(expr.get(field("subclass")), "steps"),
+  expr.eq(expr.get(field("structure")), "tunnel"),
+  expr.eq(expr.get(field("type")), "steps"),
 );
 const roadNeedsControlledSurfaceButtCap = expr.all(
   expr.match<string, boolean>(
-    expr.get(field("brunnel")),
+    expr.get(field("structure")),
     [{ labels: ["tunnel", "bridge"], value: false }],
     true,
   ),
   expr.eq(expr.get(field("foot")), "no"),
   expr.match<string, boolean>(
-    expr.get(field("class")),
-    [
-      {
-        labels: [
-          "motorway",
-          "trunk",
-          "primary",
-          "motorway_construction",
-          "trunk_construction",
-          "primary_construction",
-        ],
-        value: true,
-      },
-    ],
+    expr.case<string>(
+      [{ when: expr.eq(expr.get(field("class")), "construction"), value: expr.get(field("type")) }],
+      expr.get(field("class")),
+    ),
+    [{ labels: ["motorway", "trunk", "primary", "motorway_link", "trunk_link", "primary_link"], value: true }],
     false,
   ),
 );
@@ -692,9 +680,8 @@ function roadWidth(
     const ordinaryWidth =
       oneWayScale === 1
         ? width
-        : expr.match<number, number>(
-            expr.get(field("oneway")),
-            [{ labels: [1, -1], value: width * oneWayScale }],
+        : expr.case<number>(
+            [{when: expr.eq(expr.get(field("oneway")), true), value: width * oneWayScale}],
             width,
           );
     const rampWidth = rampWidths?.find(
@@ -704,7 +691,7 @@ function roadWidth(
       rampWidth === undefined
         ? ordinaryWidth
         : expr.case<number>(
-            [{ when: expr.eq(expr.get(field("ramp")), 1), value: rampWidth }],
+            [{ when: expr.eq(expr.get(field("link")), true), value: rampWidth }],
             ordinaryWidth,
           );
     if (!casing) return surfaceWidth;
@@ -1000,7 +987,7 @@ const cyberpunkPrimaryPlaceLabelIds = [
 const cyberpunkPlaceName = expr.coalesce(
   expr.get(field("nameLatin")),
   expr.get(field("name")),
-  expr.get(field("nameEnglish")),
+  expr.get(field("nameEn")),
   "",
 );
 
@@ -1206,7 +1193,7 @@ function cyberpunkSettlementRenderStack(): TileflowNamedRenderStack {
     kind: "all",
     selectors: [
       { kind: "geometry", geometry: "point" },
-      { kind: "compare", field: "class", operator: "eq", value: "city" },
+      { kind: "compare", field: "type", operator: "eq", value: "city" },
       {
         kind: "any",
         selectors: [
@@ -1221,10 +1208,10 @@ function cyberpunkSettlementRenderStack(): TileflowNamedRenderStack {
           {
             kind: "all",
             selectors: [
-              { kind: "has", field: "rank" },
+              { kind: "has", field: "symbolrank" },
               {
                 kind: "compare",
-                field: "rank",
+                field: "symbolrank",
                 operator: "lte",
                 value: rank,
                 coerce: "number",
@@ -1255,7 +1242,7 @@ function cyberpunkSettlementRenderStack(): TileflowNamedRenderStack {
   );
   return {
     settlementHalo: renderPass({
-      feature: "place",
+      feature: "placeLabel",
       renderer: "circle",
       placement: "below-labels",
       selector,
@@ -1278,7 +1265,7 @@ function cyberpunkSettlementRenderStack(): TileflowNamedRenderStack {
       },
     }),
     settlementNode: renderPass({
-      feature: "place",
+      feature: "placeLabel",
       renderer: "circle",
       placement: { above: "labels.render.settlementHalo" },
       selector,
@@ -1399,15 +1386,13 @@ function cyberpunkRoadImportanceSelector(
         ? ([
             {
               kind: "compare",
-              field: "ramp",
+              field: "link",
               operator: "ne",
-              value: 1,
-              coerce: "number",
-              fallback: 0,
+              value: true,
             },
             {
               kind: "compare",
-              field: "brunnel",
+              field: "structure",
               operator: "ne",
               value: "tunnel",
               fallback: "",
@@ -1446,8 +1431,8 @@ function cyberpunkPrincipalRoadRenderStack(): TileflowNamedRenderStack {
   );
   const roadCoreStructureAttenuation = expr.case<number>(
     [
-      { when: expr.eq(expr.get(field("brunnel")), "tunnel"), value: 0.32 },
-      { when: expr.eq(expr.get(field("ramp")), 1), value: 0.55 },
+      { when: expr.eq(expr.get(field("structure")), "tunnel"), value: 0.32 },
+      { when: expr.eq(expr.get(field("link")), true), value: 0.55 },
     ],
     1,
   );
@@ -1632,7 +1617,7 @@ function cyberpunkBuildingImportanceSelector(
               },
               {
                 kind: "compare",
-                field: "buildingTone",
+                field: "tone",
                 operator: "eq",
                 value: "destination",
                 fallback: "",
@@ -1641,7 +1626,7 @@ function cyberpunkBuildingImportanceSelector(
                 ? [
                     {
                       kind: "compare",
-                      field: "renderHeight",
+                      field: "height",
                       operator: "gte",
                       value: 36,
                       coerce: "number",
@@ -1702,11 +1687,9 @@ function cyberpunkBuildingRenderStack(): TileflowNamedRenderStack {
           { kind: "geometry", geometry: "polygon" },
           {
             kind: "compare",
-            field: "hide3d",
+            field: "extrude",
             operator: "ne",
-            value: 1,
-            coerce: "number",
-            fallback: 0,
+            value: false,
           },
         ],
       },
@@ -1813,10 +1796,10 @@ function cyberpunkPoiSelector(
     kind: "all",
     selectors: [
       { kind: "geometry", geometry: "point" },
-      { kind: "has", field: "poiFilterRank" },
+      { kind: "has", field: "filterrank" },
       {
         kind: "compare",
-        field: "poiFilterRank",
+        field: "filterrank",
         operator: "gte",
         value: 0,
         coerce: "number",
@@ -1824,16 +1807,16 @@ function cyberpunkPoiSelector(
       },
       {
         kind: "compare",
-        field: "poiFilterRank",
+        field: "filterrank",
         operator: "lte",
         value: maxRank,
         coerce: "number",
         fallback: 6,
       },
-      { kind: "has", field: "poiSizeRank" },
+      { kind: "has", field: "sizerank" },
       {
         kind: "compare",
-        field: "poiSizeRank",
+        field: "sizerank",
         operator: "gte",
         value: 0,
         coerce: "number",
@@ -1841,7 +1824,7 @@ function cyberpunkPoiSelector(
       },
       {
         kind: "compare",
-        field: "poiSizeRank",
+        field: "sizerank",
         operator: "lte",
         value: maxSize,
         coerce: "number",
@@ -1862,7 +1845,7 @@ function cyberpunkDestinationRenderStack(): TileflowNamedRenderStack {
         selectors: [
           {
             kind: "compare",
-            field: "poiCategory",
+            field: "class",
             operator: "eq",
             value: "transport",
           },
@@ -1871,12 +1854,12 @@ function cyberpunkDestinationRenderStack(): TileflowNamedRenderStack {
             selectors: [
               {
                 kind: "in",
-                field: "poiCategory",
+                field: "class",
                 values: ["landmark", "arts-entertainment", "park-nature"],
               },
               {
                 kind: "compare",
-                field: "poiSizeRank",
+                field: "sizerank",
                 operator: "lte",
                 value: 8,
                 coerce: "number",
@@ -1911,7 +1894,7 @@ function cyberpunkDestinationRenderStack(): TileflowNamedRenderStack {
         selectors: [
           {
             kind: "compare",
-            field: "poiCategory",
+            field: "class",
             operator: "eq",
             value: "transport",
           },
@@ -1920,12 +1903,12 @@ function cyberpunkDestinationRenderStack(): TileflowNamedRenderStack {
             selectors: [
               {
                 kind: "in",
-                field: "poiCategory",
+                field: "class",
                 values: ["landmark", "arts-entertainment", "medical"],
               },
               {
                 kind: "compare",
-                field: "poiSizeRank",
+                field: "sizerank",
                 operator: "lte",
                 value: 6,
                 coerce: "number",
@@ -1940,7 +1923,7 @@ function cyberpunkDestinationRenderStack(): TileflowNamedRenderStack {
   return {
     destinationLightPool: renderPass({
       placement: "below-roads",
-      feature: "poi",
+      feature: "poiLabel",
       renderer: "circle",
       selector: lightSelector,
       style: {
@@ -1965,7 +1948,7 @@ function cyberpunkDestinationRenderStack(): TileflowNamedRenderStack {
     }),
     destinationScanRing: renderPass({
       placement: "below-labels",
-      feature: "poi",
+      feature: "poiLabel",
       renderer: "circle",
       selector: hudPoiSelector,
       style: {
@@ -1986,7 +1969,7 @@ function cyberpunkDestinationRenderStack(): TileflowNamedRenderStack {
     }),
     destinationSign: renderPass({
       placement: "below-labels",
-      feature: "poi",
+      feature: "poiLabel",
       renderer: "symbol",
       selector: hudPoiSelector,
       style: {
@@ -2093,6 +2076,17 @@ function cyberpunkWaterRenderStack(): TileflowNamedRenderStack {
 
 function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
   const polygonSelector = { kind: "geometry", geometry: "polygon" } as const;
+  const gridStyle = {
+    minZoom: 15,
+    opacity: expr.interpolate({ kind: "linear" }, expr.zoom(), [
+      [15, 0],
+      [16, 0.035],
+      [18, 0.065],
+      [22, 0.08],
+    ]),
+    pattern: "cyberpunk-data-grid",
+  } as const;
+
   return {
     sectorWash: renderPass({
       placement: { above: "land.landuse.residential.fill" },
@@ -2106,7 +2100,6 @@ function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
             kind: "in",
             field: "class",
             values: [
-              "business_area",
               "commercial",
               "retail",
               "industrial",
@@ -2127,7 +2120,7 @@ function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
           expr.get(field("class")),
           [
             {
-              labels: ["business_area", "commercial", "retail"],
+              labels: ["commercial", "retail"],
               value: "#35152F",
             },
             { labels: ["industrial", "railway"], value: "#29272C" },
@@ -2144,9 +2137,16 @@ function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
         ]),
       },
     }),
-    businessGrid: renderPass({
+    commercialGrid: renderPass({
       placement: { above: "land.render.sectorWash" },
       feature: "landuse",
+      renderer: "fill",
+      selector: {kind: "in", field: "class", values: ["commercial", "retail", "industrial"]},
+      style: gridStyle,
+    }),
+    businessGrid: renderPass({
+      placement: { above: "land.render.commercialGrid" },
+      feature: "landuseOverlay",
       renderer: "fill",
       selector: {
         kind: "all",
@@ -2155,21 +2155,12 @@ function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
           {
             kind: "in",
             field: "class",
-            values: ["business_area", "commercial", "retail", "industrial"],
+            values: ["activity_area"],
             fallback: "",
           },
         ],
       },
-      style: {
-        minZoom: 15,
-        opacity: expr.interpolate({ kind: "linear" }, expr.zoom(), [
-          [15, 0],
-          [16, 0.035],
-          [18, 0.065],
-          [22, 0.08],
-        ]),
-        pattern: "cyberpunk-data-grid",
-      },
+      style: gridStyle,
     }),
     sectorTrace: renderPass({
       placement: { above: "land.render.businessGrid" },
@@ -2183,7 +2174,6 @@ function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
             kind: "in",
             field: "class",
             values: [
-              "business_area",
               "commercial",
               "retail",
               "industrial",
@@ -2203,7 +2193,7 @@ function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
           expr.coalesce(expr.get(field("class")), ""),
           [
             {
-              labels: ["business_area", "commercial", "retail"],
+              labels: ["commercial", "retail"],
               value: cyberpunkPalette.activityInk,
             },
             { labels: ["industrial", "railway"], value: "#BC915B" },
@@ -2233,14 +2223,13 @@ function cyberpunkLandRenderStack(): TileflowNamedRenderStack {
     }),
     urbanParkTrace: renderPass({
       placement: { above: "land.landcover.urbanPark.fill" },
-      feature: "landcover",
+      feature: "landuse",
       renderer: "line",
       selector: {
         kind: "all",
         selectors: [
           polygonSelector,
-          { kind: "compare", field: "class", operator: "eq", value: "grass" },
-          { kind: "in", field: "subclass", values: ["park", "garden"] },
+          { kind: "in", field: "class", values: ["park", "garden"] },
         ],
       },
       style: {
@@ -2335,7 +2324,7 @@ const hasPhysicalCircularRadii = expr.all(
   expr.gte(circularRoadInnerRadiusMetres, 0),
 );
 const circularRoadBaseWidth = expr.match<string, number>(
-  expr.coalesce(expr.get(field("class")), "minor"),
+  expr.coalesce(expr.get(field("class")), "street"),
   [
     { labels: "motorway", value: 6 },
     { labels: "trunk", value: 5.5 },
@@ -2447,7 +2436,7 @@ const circularRoadCasingRadius = circularRoadInnerRadius(true);
 const circularRoadWidth = circularRoadStrokeWidth(false);
 const circularRoadCasingWidth = circularRoadStrokeWidth(true);
 const roundaboutNeonColor = expr.match<string, string>(
-  expr.coalesce(expr.get(field("class")), "minor"),
+  expr.coalesce(expr.get(field("class")), "street"),
   [
     { labels: ["trunk", "secondary"], value: cyberpunkPalette.magenta },
     { labels: ["motorway", "primary"], value: cyberpunkPalette.cyan },
@@ -2484,8 +2473,6 @@ export const cyberpunkTheme = defineCommunityTheme({
     },
     buildings: {
       active: cyberpunkPalette.buildingActive,
-      businessCorridor: "#071733",
-      businessCorridorOutline: cyberpunkPalette.magenta,
       civic: "#071733",
       commercial: cyberpunkPalette.buildingActive,
       destination: "#071733",
@@ -2668,7 +2655,7 @@ export const cyberpunk = bindCommunityMapTheme(
         {
           admin2Background: renderPass({
             placement: { below: "boundaries.admin4" },
-            feature: "boundary",
+            feature: "admin",
             renderer: "line",
             selector: {
               kind: "all",
@@ -2685,9 +2672,7 @@ export const cyberpunk = bindCommunityMapTheme(
                   kind: "compare",
                   field: "maritime",
                   operator: "ne",
-                  value: 1,
-                  coerce: "number",
-                  fallback: 0,
+                  value: true,
                 },
               ],
             },
@@ -2769,6 +2754,7 @@ export const cyberpunk = bindCommunityMapTheme(
       ),
       land: withRenderStack(
         land({
+          activityAreas: { fill: { visible: false }, outline: { visible: false } },
           background: { color: cyberpunkPalette.land },
           landuse: {
             residential: {

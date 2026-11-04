@@ -72,9 +72,9 @@ test("Cyberpunk HUD consumes canonical POI density and size ranks", () => {
   assert.ok(light, "Important destinations must retain their ground light");
   assert.deepEqual(ring?.filter, sign?.filter);
   const filter = JSON.stringify(sign?.filter);
-  for (const signal of ["filter_rank", "size_rank"])
+  for (const signal of ["filterrank", "sizerank"])
     assert.ok(filter.includes(signal));
-  assert.doesNotMatch(filter, /"class"|"subclass"|"rank"/u);
+  assert.doesNotMatch(filter, /"category"|"subclass"|"rank"/u);
   assert.equal(sign?.layout?.["icon-allow-overlap"], false);
   assert.equal(sign?.layout?.["icon-ignore-placement"], false);
   assert.equal(sign?.layout?.["text-allow-overlap"], false);
@@ -91,24 +91,24 @@ test("Cyberpunk HUD consumes canonical POI density and size ranks", () => {
       properties,
     } as never);
   assert.equal(
-    matches(14, { category: "landmark", filter_rank: 0, size_rank: 0 }),
+    matches(14, { class: "landmark", filterrank: 0, sizerank: 0 }),
     true,
   );
   assert.equal(
-    matches(14, { category: "transport", filter_rank: 1, size_rank: 16 }),
+    matches(14, { class: "transport", filterrank: 1, sizerank: 16 }),
     true,
   );
   // Local businesses enter at street scale, without crowding the city overview.
   assert.equal(
-    matches(14, { category: "retail", filter_rank: 0, size_rank: 0 }),
+    matches(14, { class: "retail", filterrank: 0, sizerank: 0 }),
     false,
   );
   assert.equal(
-    matches(16, { category: "retail", filter_rank: 2, size_rank: 16 }),
+    matches(16, { class: "retail", filterrank: 2, sizerank: 16 }),
     false,
   );
   assert.equal(
-    matches(17, { category: "retail", filter_rank: 2, size_rank: 10 }),
+    matches(17, { class: "retail", filterrank: 2, sizerank: 10 }),
     true,
   );
   const receivesLight = featureFilter(
@@ -119,9 +119,9 @@ test("Cyberpunk HUD consumes canonical POI density and size ranks", () => {
     receivesLight({ zoom: 17 }, {
       type: 1,
       properties: {
-        category: "landmark",
-        filter_rank: 0,
-        size_rank: 3,
+        class: "landmark",
+        filterrank: 0,
+        sizerank: 3,
       },
     } as never),
     true,
@@ -130,22 +130,22 @@ test("Cyberpunk HUD consumes canonical POI density and size ranks", () => {
     receivesLight({ zoom: 17 }, {
       type: 1,
       properties: {
-        category: "retail",
-        filter_rank: 0,
-        size_rank: 3,
+        class: "retail",
+        filterrank: 0,
+        sizerank: 3,
       },
     } as never),
     false,
   );
   assert.equal(
-    matches(20, { category: "transport", filter_rank: 3, size_rank: 16 }),
+    matches(20, { class: "transport", filterrank: 3, sizerank: 16 }),
     false,
   );
   assert.equal(
-    matches(20, { category: "transport", filter_rank: 2, size_rank: 17 }),
+    matches(20, { class: "transport", filterrank: 2, sizerank: 17 }),
     false,
   );
-  assert.equal(matches(20, { category: "transport", rank: 1 }), false);
+  assert.equal(matches(20, { class: "transport", rank: 1 }), false);
   assert.deepEqual(validateStyleMin(compiled.style as never), []);
 });
 
@@ -174,7 +174,7 @@ test("Cyberpunk offers capped relief with independent 3D trees and close-up deta
   assert.equal(buildingInk.result, "success");
   assert.equal(poiInk.result, "success");
   if (buildingInk.result === "success" && poiInk.result === "success") {
-    for (const [building_tone, category] of [
+    for (const [tone, category] of [
       ["destination", "arts-entertainment"],
       ["destination", "medical"],
       ["destination", "landmark"],
@@ -186,11 +186,11 @@ test("Cyberpunk offers capped relief with independent 3D trees and close-up deta
       assert.equal(
         buildingInk.value.evaluate({ zoom: 17 }, {
           type: 3,
-          properties: { building_tone, importance_tier: 2 },
+          properties: { tone, importance_tier: 2 },
         } as never),
         poiInk.value.evaluate({ zoom: 17 }, {
           type: 1,
-          properties: { category },
+          properties: { class: category },
         } as never),
         `${category} must use the matching building family's ink`,
       );
@@ -229,22 +229,22 @@ test("Cyberpunk offers capped relief with independent 3D trees and close-up deta
   assert.ok(relief);
   assert.equal(relief.layout?.visibility, "none");
   assert.equal(relief.metadata?.["tileflow:3d-toggle"], "building");
-  const height = createExpression(
+  const reliefHeight = createExpression(
     relief.paint?.["fill-extrusion-height"],
     "height",
   );
-  assert.equal(height.result, "success");
-  if (height.result === "success") {
-    for (const [render_height, expected] of [
+  assert.equal(reliefHeight.result, "success");
+  if (reliefHeight.result === "success") {
+    for (const [height, expected] of [
       [0, 4],
       [5, 4],
       [25, 8],
       [300, 14],
     ]) {
       assert.equal(
-        height.value.evaluate({ zoom: 17 }, {
+        reliefHeight.value.evaluate({ zoom: 17 }, {
           type: 3,
-          properties: { render_height },
+          properties: { height },
         } as never),
         expected,
       );
@@ -257,13 +257,13 @@ test("Cyberpunk offers capped relief with independent 3D trees and close-up deta
   assert.equal(
     visible({ zoom: 17 }, {
       type: 3,
-      properties: { render_height: 5 },
+      properties: { height: 5 },
     } as never),
     true,
     "Ordinary buildings also receive relief",
   );
   assert.equal(
-    visible({ zoom: 17 }, { type: 3, properties: { hide_3d: true } } as never),
+    visible({ zoom: 17 }, { type: 3, properties: { extrude: false } } as never),
     false,
   );
   assert.ok(compiledLayerForTarget(compiled, "land.render.cityOutline"));
@@ -341,42 +341,42 @@ test("Cyberpunk overview admits roads by scale and only marks ranked real cities
   assert.equal(
     roadVisible({ zoom: 16 }, {
       type: 2,
-      properties: { class: "minor", importance_tier: 0 },
+      properties: { class: "street", importance_tier: 0 },
     } as never),
     false,
   );
   assert.equal(
     cityVisible({ zoom: 5 }, {
       type: 1,
-      properties: { class: "city", capital: 2 },
+      properties: { class: "settlement", type: "city", capital: 2 },
     } as never),
     true,
   );
   assert.equal(
     cityVisible({ zoom: 5 }, {
       type: 1,
-      properties: { class: "city", rank: 4 },
+      properties: { class: "settlement", type: "city", symbolrank: 4 },
     } as never),
     true,
   );
   assert.equal(
     cityVisible({ zoom: 5 }, {
       type: 1,
-      properties: { class: "city", rank: 12 },
+      properties: { class: "settlement", type: "city", symbolrank: 12 },
     } as never),
     false,
   );
   assert.equal(
     cityVisible({ zoom: 5 }, {
       type: 1,
-      properties: { class: "city" },
+      properties: { class: "settlement", type: "city" },
     } as never),
     false,
   );
   assert.equal(
     cityVisible({ zoom: 5 }, {
       type: 1,
-      properties: { class: "village", rank: 1 },
+      properties: { class: "settlement", type: "village", symbolrank: 1 },
     } as never),
     false,
   );

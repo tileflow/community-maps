@@ -78,14 +78,13 @@ const parkSelector: TileflowRenderSelector = {
   kind: "all",
   selectors: [
     polygon,
-    { kind: "in", field: "class", values: ["grass"] },
-    { kind: "in", field: "subclass", values: ["park", "garden"] },
+    { kind: "in", field: "class", values: ["park", "garden"] },
   ],
 };
 const woodSelector: TileflowRenderSelector = {
   kind: "in",
   field: "class",
-  values: ["wood", "forest"],
+  values: ["wood"],
 };
 
 function area(
@@ -257,7 +256,7 @@ function stop(
 ): TileflowPoiCategoryStyle {
   const park = image === "stw-hill";
   const principalPark = expr.lte(
-    expr.toNumber(expr.get(field("poiSizeRank")), 16),
+    expr.toNumber(expr.get(field("sizerank")), 16),
     2,
   );
   return {
@@ -332,7 +331,7 @@ const featuredCategories: readonly string[] = [
   "transport",
 ];
 
-const tone = expr.coalesce(expr.get(field("buildingTone")), "generic");
+const tone = expr.coalesce(expr.get(field("tone")), "generic");
 const roofColor = expr.match(
   tone,
   [
@@ -414,6 +413,7 @@ export const superTileWorld = bindCommunityMapTheme(
     modules: {
       land: withRenderStack(
         land({
+          activityAreas: {fill: {visible: false}, outline: {visible: false}},
           background: { color: c.grass },
           globalLandcover: {
             minZoom: 0,
@@ -477,14 +477,14 @@ export const superTileWorld = bindCommunityMapTheme(
           }),
           grassBands: renderPass({
             placement: { above: "land.landcover.grass.fill" },
-            feature: "landcover",
+            feature: "landuse",
             renderer: "fill",
             selector: { kind: "in", field: "class", values: ["grass"] },
             style: { pattern: "stw-grass", minZoom: 11, opacity: 0.55 },
           }),
           parkCliff: renderPass({
             placement: { below: "land.landcover.urbanPark.fill" },
-            feature: "landcover",
+            feature: "landuse",
             renderer: "fill",
             selector: parkSelector,
             style: {
@@ -496,7 +496,7 @@ export const superTileWorld = bindCommunityMapTheme(
           }),
           parkCliffEdge: renderPass({
             placement: { below: "land.render.parkCliff" },
-            feature: "landcover",
+            feature: "landuse",
             renderer: "line",
             selector: parkSelector,
             style: {
@@ -510,35 +510,35 @@ export const superTileWorld = bindCommunityMapTheme(
           }),
           parkGarden: renderPass({
             placement: { above: "land.landcover.urbanPark.fill" },
-            feature: "landcover",
+            feature: "landuse",
             renderer: "fill",
             selector: parkSelector,
             style: { pattern: "stw-meadow", minZoom: 11, opacity: 0.8 },
           }),
           forestCanopy: renderPass({
             placement: { above: "land.landcover.wood.fill" },
-            feature: "landcover",
+            feature: "landuse",
             renderer: "fill",
             selector: woodSelector,
             style: { pattern: "stw-forest", minZoom: 8, opacity: 0.85 },
           }),
           farmTiles: renderPass({
             placement: { above: "land.landcover.farmland.fill" },
-            feature: "landcover",
+            feature: "landuse",
             renderer: "fill",
             selector: { kind: "in", field: "class", values: ["farmland"] },
             style: { pattern: "stw-farmland", minZoom: 8, opacity: 0.5 },
           }),
           sandPixels: renderPass({
             placement: { above: "land.landcover.sand.fill" },
-            feature: "landcover",
+            feature: "landuse",
             renderer: "fill",
             selector: { kind: "in", field: "class", values: ["sand"] },
             style: { pattern: "stw-sand", minZoom: 7, opacity: 0.6 },
           }),
           rockStrata: renderPass({
             placement: { above: "land.landcover.rock.fill" },
-            feature: "landcover",
+            feature: "landuse",
             renderer: "fill",
             selector: { kind: "in", field: "class", values: ["rock"] },
             style: { pattern: "stw-sand", minZoom: 7, opacity: 0.75 },
@@ -677,10 +677,6 @@ export const superTileWorld = bindCommunityMapTheme(
               glass: c.blue,
             },
           },
-          businessCorridor: {
-            fill: { visible: false },
-            outline: { visible: false },
-          },
           flat: {
             fill: {
               color: roofColor,
@@ -747,7 +743,6 @@ export const superTileWorld = bindCommunityMapTheme(
           areas: {
             pedestrian: area(c.route, 14),
             road: area(c.route, 16),
-            // World currently has pier polygons but no transportation_outline source layer.
             pier: area(c.cliff, 12),
           },
           sidewalks: {
@@ -772,7 +767,7 @@ export const superTileWorld = bindCommunityMapTheme(
                   kind: "not",
                   selector: {
                     kind: "in",
-                    field: "brunnel",
+                    field: "structure",
                     values: ["tunnel"],
                   },
                 },
@@ -802,7 +797,7 @@ export const superTileWorld = bindCommunityMapTheme(
                   kind: "not",
                   selector: {
                     kind: "in",
-                    field: "brunnel",
+                    field: "structure",
                     values: ["tunnel"],
                   },
                 },
@@ -810,7 +805,7 @@ export const superTileWorld = bindCommunityMapTheme(
                   kind: "not",
                   selector: {
                     kind: "in",
-                    field: "subclass",
+                    field: "type",
                     values: ["steps"],
                   },
                 },
@@ -1018,12 +1013,12 @@ export const superTileWorld = bindCommunityMapTheme(
               selector: {
                 kind: "all",
                 selectors: [
-                  { kind: "in", field: "poiCategory", values: [category] },
-                  { kind: "has", field: "poiFilterRank" },
-                  { kind: "has", field: "poiSizeRank" },
+                  { kind: "in", field: "class", values: [category] },
+                  { kind: "has", field: "filterrank" },
+                  { kind: "has", field: "sizerank" },
                   {
                     kind: "compare",
-                    field: "poiFilterRank",
+                    field: "filterrank",
                     coerce: "number",
                     fallback: -1,
                     operator: "gte",
@@ -1033,7 +1028,7 @@ export const superTileWorld = bindCommunityMapTheme(
                     kind: "step",
                     fallback: {
                       kind: "compare",
-                      field: "poiFilterRank",
+                      field: "filterrank",
                       coerce: "number",
                       fallback: 6,
                       operator: "lte",
@@ -1044,7 +1039,7 @@ export const superTileWorld = bindCommunityMapTheme(
                         zoom: 17,
                         selector: {
                           kind: "compare",
-                          field: "poiFilterRank",
+                          field: "filterrank",
                           coerce: "number",
                           fallback: 6,
                           operator: "lte",
@@ -1055,7 +1050,7 @@ export const superTileWorld = bindCommunityMapTheme(
                         zoom: 18,
                         selector: {
                           kind: "compare",
-                          field: "poiFilterRank",
+                          field: "filterrank",
                           coerce: "number",
                           fallback: 6,
                           operator: "lte",
@@ -1066,7 +1061,7 @@ export const superTileWorld = bindCommunityMapTheme(
                   },
                   {
                     kind: "compare",
-                    field: "poiSizeRank",
+                    field: "sizerank",
                     coerce: "number",
                     fallback: -1,
                     operator: "gte",
@@ -1074,7 +1069,7 @@ export const superTileWorld = bindCommunityMapTheme(
                   },
                   {
                     kind: "compare",
-                    field: "poiSizeRank",
+                    field: "sizerank",
                     coerce: "number",
                     fallback: 17,
                     operator: "lte",
@@ -1103,7 +1098,7 @@ export const superTileWorld = bindCommunityMapTheme(
                           kind: "not",
                           selector: {
                             kind: "in",
-                            field: "poiType",
+                            field: "type",
                             values: ["airport"],
                           },
                         } as const,
@@ -1113,7 +1108,7 @@ export const superTileWorld = bindCommunityMapTheme(
                             kind: "not",
                             selector: {
                               kind: "in",
-                              field: "poiType",
+                              field: "type",
                               values: ["public_transit_facility"],
                             },
                           },
@@ -1135,7 +1130,7 @@ export const superTileWorld = bindCommunityMapTheme(
                             selectors: [
                               {
                                 kind: "compare",
-                                field: "poiFilterRank",
+                                field: "filterrank",
                                 coerce: "number",
                                 fallback: 6,
                                 operator: "lte",
@@ -1143,7 +1138,7 @@ export const superTileWorld = bindCommunityMapTheme(
                               },
                               {
                                 kind: "compare",
-                                field: "poiSizeRank",
+                                field: "sizerank",
                                 coerce: "number",
                                 fallback: 17,
                                 operator: "lt",
