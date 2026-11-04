@@ -127,8 +127,6 @@ const terminalSemanticColorRoles = {
   boundaries: ['admin', 'default', 'disputed', 'halo', 'major', 'maritime', 'regional'],
   buildings: [
     'active',
-    'businessCorridor',
-    'businessCorridorOutline',
     'civic',
     'commercial',
     'destination',
@@ -184,8 +182,8 @@ const terminalSemanticColorRoles = {
     'wood',
   ],
   landuse: [
-    'businessCorridor',
-    'businessCorridorOutline',
+
+
     'cemetery',
     'civic',
     'commercial',
@@ -275,8 +273,8 @@ const terminalSemanticColors = Object.fromEntries(
   ),
 );
 
-const terminalBuildingHeight2d = expr.toNumber(expr.coalesce(expr.get(field('renderHeight')), 0), 0);
-const terminalBuildingTone2d = expr.coalesce(expr.get(field('buildingTone')), '');
+const terminalBuildingHeight2d = expr.toNumber(expr.coalesce(expr.get(field('height')), 0), 0);
+const terminalBuildingTone2d = expr.coalesce(expr.get(field('tone')), '');
 const terminalImportanceTierField = field('importanceTier');
 const terminalPublishedImportanceTier = expr.toNumber(
   expr.coalesce(expr.get(terminalImportanceTierField), 0),
@@ -407,9 +405,9 @@ const terminalRoadImportanceTier = expr.case<number>(
   ),
 );
 
-const terminalPoiCategory = expr.coalesce(expr.get(field('poiCategory')), '');
-const terminalPoiFilterRank = expr.toNumber(expr.get(field('poiFilterRank')), 6);
-const terminalPoiSizeRank = expr.toNumber(expr.get(field('poiSizeRank')), 17);
+const terminalPoiCategory = expr.coalesce(expr.get(field('class')), '');
+const terminalPoiFilterRank = expr.toNumber(expr.get(field('filterrank')), 6);
+const terminalPoiSizeRank = expr.toNumber(expr.get(field('sizerank')), 17);
 const terminalPoiImportanceTier = expr.match<string, number>(
   terminalPoiCategory,
   [
@@ -450,32 +448,22 @@ const roadClearanceExtraAtZ15 = expr.toNumber(
   0,
 );
 const roadNeedsStructuralButtCap = expr.any(
-  expr.eq(expr.get(field('brunnel')), 'tunnel'),
-  expr.eq(expr.get(field('class')), 'steps'),
-  expr.eq(expr.get(field('subclass')), 'steps'),
+  expr.eq(expr.get(field('structure')), 'tunnel'),
+  expr.eq(expr.get(field('type')), 'steps'),
 );
 const roadNeedsControlledSurfaceButtCap = expr.all(
   expr.match<string, boolean>(
-    expr.get(field('brunnel')),
+    expr.get(field('structure')),
     [{labels: ['tunnel', 'bridge'], value: false}],
     true,
   ),
   expr.eq(expr.get(field('foot')), 'no'),
   expr.match<string, boolean>(
-    expr.get(field('class')),
-    [
-      {
-        labels: [
-          'motorway',
-          'trunk',
-          'primary',
-          'motorway_construction',
-          'trunk_construction',
-          'primary_construction',
-        ],
-        value: true,
-      },
-    ],
+    expr.case<string>(
+      [{ when: expr.eq(expr.get(field('class')), 'construction'), value: expr.get(field('type')) }],
+      expr.get(field('class')),
+    ),
+    [{ labels: ['motorway', 'trunk', 'primary', 'motorway_link', 'trunk_link', 'primary_link'], value: true }],
     false,
   ),
 );
@@ -618,9 +606,8 @@ function roadWidth(
     const ordinaryWidth =
       oneWayScale === 1
         ? width
-        : expr.match<number, number>(
-            expr.get(field('oneway')),
-            [{labels: [1, -1], value: width * oneWayScale}],
+        : expr.case<number>(
+            [{when: expr.eq(expr.get(field('oneway')), true), value: width * oneWayScale}],
             width,
           );
     const rampWidth = rampWidths?.find(([rampLevel]) => rampLevel === level)?.[1];
@@ -628,7 +615,7 @@ function roadWidth(
       rampWidth === undefined
         ? ordinaryWidth
         : expr.case<number>(
-            [{when: expr.eq(expr.get(field('ramp')), 1), value: rampWidth}],
+            [{when: expr.eq(expr.get(field('link')), true), value: rampWidth}],
             ordinaryWidth,
           );
     if (!casing) return surfaceWidth;
@@ -1016,13 +1003,11 @@ function terminalRoadImportanceSelector(minimum: 2 | 3): TileflowRenderSelector 
       },
       {
         kind: 'compare',
-        field: 'ramp',
+        field: 'link',
         operator: 'ne',
-        value: 1,
-        coerce: 'number',
-        fallback: 0,
+        value: true,
       },
-      {kind: 'compare', field: 'brunnel', operator: 'ne', value: 'tunnel', fallback: ''},
+      {kind: 'compare', field: 'structure', operator: 'ne', value: 'tunnel', fallback: ''},
     ],
   };
 }
@@ -1129,7 +1114,7 @@ function terminalBuildingImportanceSelector(minimum: 2 | 3): TileflowRenderSelec
   const hasPublishedTier = {kind: 'has', field: 'importanceTier'} as const;
   const heightAtLeast = (value: number): TileflowRenderSelector => ({
     kind: 'compare',
-    field: 'renderHeight',
+    field: 'height',
     operator: 'gte',
     value,
     coerce: 'number',
@@ -1202,7 +1187,7 @@ function terminalBuildingImportanceSelector(minimum: 2 | 3): TileflowRenderSelec
         ? ([
             {
               kind: 'compare',
-              field: 'buildingTone',
+              field: 'tone',
               operator: 'eq',
               value: 'destination',
               fallback: '',
@@ -1215,7 +1200,7 @@ function terminalBuildingImportanceSelector(minimum: 2 | 3): TileflowRenderSelec
               selectors: [
                 {
                   kind: 'compare',
-                  field: 'buildingTone',
+                  field: 'tone',
                   operator: 'eq',
                   value: 'destination',
                   fallback: '',
@@ -1225,7 +1210,7 @@ function terminalBuildingImportanceSelector(minimum: 2 | 3): TileflowRenderSelec
                   selectors: [
                     {
                       kind: 'in',
-                      field: 'buildingTone',
+                      field: 'tone',
                       values: ['active', 'commercial', 'destination'],
                       fallback: '',
                     },
@@ -1382,10 +1367,10 @@ function terminalDestinationRenderStack(): TileflowNamedRenderStack {
     kind: 'all',
     selectors: [
       {kind: 'geometry', geometry: 'point'},
-      {kind: 'has', field: 'poiFilterRank'},
+      {kind: 'has', field: 'filterrank'},
       {
         kind: 'compare',
-        field: 'poiFilterRank',
+        field: 'filterrank',
         operator: 'gte',
         value: 0,
         coerce: 'number',
@@ -1393,16 +1378,16 @@ function terminalDestinationRenderStack(): TileflowNamedRenderStack {
       },
       {
         kind: 'compare',
-        field: 'poiFilterRank',
+        field: 'filterrank',
         operator: 'lte',
         value: 2,
         coerce: 'number',
         fallback: 6,
       },
-      {kind: 'has', field: 'poiSizeRank'},
+      {kind: 'has', field: 'sizerank'},
       {
         kind: 'compare',
-        field: 'poiSizeRank',
+        field: 'sizerank',
         operator: 'gte',
         value: 0,
         coerce: 'number',
@@ -1410,7 +1395,7 @@ function terminalDestinationRenderStack(): TileflowNamedRenderStack {
       },
       {
         kind: 'compare',
-        field: 'poiSizeRank',
+        field: 'sizerank',
         operator: 'lte',
         value: 16,
         coerce: 'number',
@@ -1431,7 +1416,7 @@ function terminalDestinationRenderStack(): TileflowNamedRenderStack {
   return {
     destinationScanRing: renderPass({
       placement: {below: 'poi.transport.label'},
-      feature: 'poi',
+      feature: 'poiLabel',
       renderer: 'circle',
       selector: hudPoiSelector,
       style: {
@@ -1481,7 +1466,7 @@ function terminalDestinationRenderStack(): TileflowNamedRenderStack {
     }),
     destinationBeaconCore: renderPass({
       placement: {above: 'poi.render.destinationScanRing'},
-      feature: 'poi',
+      feature: 'poiLabel',
       renderer: 'circle',
       selector: hudPoiSelector,
       style: {
@@ -1526,7 +1511,7 @@ function terminalDestinationRenderStack(): TileflowNamedRenderStack {
     }),
     destinationPoiNode: renderPass({
       placement: {above: 'poi.arts-entertainment.label'},
-      feature: 'poi',
+      feature: 'poiLabel',
       renderer: 'symbol',
       selector: hudPoiSelector,
       style: {
@@ -1644,13 +1629,13 @@ function terminalLandRenderStack(): TileflowNamedRenderStack {
   return {
     businessGrid: renderPass({
       placement: {above: 'land.landuse.residential.fill'},
-      feature: 'landuse',
+      feature: 'landuseOverlay',
       renderer: 'fill',
       selector: {
         kind: 'all',
         selectors: [
           polygonSelector,
-          {kind: 'compare', field: 'class', operator: 'eq', value: 'business_area', fallback: ''},
+          {kind: 'compare', field: 'class', operator: 'eq', value: 'activity_area', fallback: ''},
         ],
       },
       style: {
@@ -1676,7 +1661,6 @@ function terminalLandRenderStack(): TileflowNamedRenderStack {
             kind: 'in',
             field: 'class',
             values: [
-              'business_area',
               'commercial',
               'retail',
               'industrial',
@@ -1695,7 +1679,7 @@ function terminalLandRenderStack(): TileflowNamedRenderStack {
         color: expr.match<string, string>(
           expr.coalesce(expr.get(field('class')), ''),
           [
-            {labels: ['business_area', 'commercial', 'retail'], value: '#43DB60'},
+            {labels: ['commercial', 'retail'], value: '#43DB60'},
             {labels: ['hospital', 'medical'], value: '#63F77B'},
             {labels: ['education', 'school', 'university'], value: '#87FF98'},
           ],
@@ -1713,14 +1697,13 @@ function terminalLandRenderStack(): TileflowNamedRenderStack {
     }),
     urbanParkTrace: renderPass({
       placement: {above: 'land.landcover.urbanPark.fill'},
-      feature: 'landcover',
+      feature: 'landuse',
       renderer: 'line',
       selector: {
         kind: 'all',
         selectors: [
           polygonSelector,
-          {kind: 'compare', field: 'class', operator: 'eq', value: 'grass'},
-          {kind: 'in', field: 'subclass', values: ['park', 'garden']},
+          { kind: 'in', field: 'class', values: ['park', 'garden'] },
         ],
       },
       style: {
@@ -1755,7 +1738,7 @@ const hasPhysicalCircularRadii = expr.all(
   expr.gte(circularRoadInnerRadiusMetres, 0),
 );
 const circularRoadBaseWidth = expr.match<string, number>(
-  expr.coalesce(expr.get(field('class')), 'minor'),
+  expr.coalesce(expr.get(field('class')), 'street'),
   [
     {labels: 'motorway', value: 6},
     {labels: 'trunk', value: 5.5},
@@ -1851,7 +1834,7 @@ const circularRoadCasingRadius = circularRoadInnerRadius(true);
 const circularRoadWidth = circularRoadStrokeWidth(false);
 const circularRoadCasingWidth = circularRoadStrokeWidth(true);
 const roundaboutNeonColor = expr.match<string, string>(
-  expr.coalesce(expr.get(field('class')), 'minor'),
+  expr.coalesce(expr.get(field('class')), 'street'),
   [
     {labels: ['trunk', 'secondary'], value: terminalPalette.magenta},
     {labels: ['motorway', 'primary'], value: terminalPalette.cyan},
@@ -1888,8 +1871,6 @@ export const terminalTheme = defineCommunityTheme({
     },
     buildings: {
       active: terminalPalette.buildingActive,
-      businessCorridor: '#05210E',
-      businessCorridorOutline: terminalPalette.magenta,
       civic: '#05210E',
       commercial: terminalPalette.buildingActive,
       destination: '#05210E',
@@ -2058,7 +2039,7 @@ export const terminal = bindCommunityMapTheme(
         {
           admin2Background: renderPass({
             placement: {below: 'boundaries.admin4'},
-            feature: 'boundary',
+            feature: 'admin',
             renderer: 'line',
             selector: {
               kind: 'all',
@@ -2075,9 +2056,7 @@ export const terminal = bindCommunityMapTheme(
                   kind: 'compare',
                   field: 'maritime',
                   operator: 'ne',
-                  value: 1,
-                  coerce: 'number',
-                  fallback: 0,
+                  value: true,
                 },
               ],
             },
@@ -2102,10 +2081,6 @@ export const terminal = bindCommunityMapTheme(
       ),
       buildings: withRenderStack(
         buildings({
-          businessCorridor: {
-            fill: {visible: false},
-            outline: {visible: false},
-          },
           flat: {
             fill: {
               color: terminalBuildingGhostFill,
@@ -2162,6 +2137,7 @@ export const terminal = bindCommunityMapTheme(
       ),
       land: withRenderStack(
         land({
+          activityAreas: {fill: {visible: false}, outline: {visible: false}},
           background: {color: terminalPalette.land},
           globalLandcover: {
             color: terminalOverviewLandcoverColor,

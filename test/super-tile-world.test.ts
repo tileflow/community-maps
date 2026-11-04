@@ -10,7 +10,7 @@ import test from "node:test";
 import {
   decodeTileflowTreeModel,
   resolveMap,
-  tileflowWorldV1Schema,
+  tileflowWorldFields,
 } from "@tileflow/core";
 import { createStyleWithInspection } from "@tileflow/core/build";
 import { prepareTileflowMapTreeModels } from "@tileflow/dev/icons";
@@ -150,7 +150,7 @@ function acceptsPoi(
     type: string;
   }> = {},
 ): boolean {
-  const fields = tileflowWorldV1Schema().fields;
+  const fields = tileflowWorldFields;
   const input = {
     category,
     rank: 1,
@@ -160,11 +160,11 @@ function acceptsPoi(
     ...candidate,
   };
   const names = {
-    category: fields.poiCategory,
-    rank: fields.poiFilterRank,
-    sizeRank: fields.poiSizeRank,
+    category: fields.class,
+    rank: fields.filterrank,
+    sizeRank: fields.sizerank,
     minZoom: fields.minZoom,
-    type: fields.poiType,
+    type: fields.type,
   };
   const properties = Object.fromEntries(
     Object.entries(input).flatMap(([name, value]) =>
@@ -275,17 +275,17 @@ test("Super Tile World hands district blocks to footprints and level dots to clo
 
   const coinFilter = featureFilter(coins.filter as never, `${coins.id}.filter`);
   for (const roadClass of ["path", "pedestrian"]) {
-    for (const brunnel of [undefined, "bridge", "tunnel"]) {
+    for (const structure of [undefined, "bridge", "tunnel"]) {
       assert.equal(
         coinFilter.filter(
           { zoom: 18 },
           {
             type: 2,
-            properties: { class: roadClass, ...(brunnel ? { brunnel } : {}) },
+            properties: { class: roadClass, ...(structure ? { structure } : {}) },
           } as never,
         ),
-        brunnel !== "tunnel",
-        `Coin trail on ${roadClass}/${brunnel ?? "surface"}`,
+        structure !== "tunnel",
+        `Coin trail on ${roadClass}/${structure ?? "surface"}`,
       );
     }
   }
@@ -403,12 +403,9 @@ test("Super Tile World ships valid near and far tree meshes without a sprite fal
   );
 });
 
-test("Super Tile World does not request the pier outline layer absent from current World", () => {
-  assert.ok(
-    !compiled.style.layers.some(
-      (layer) =>
-        (layer as unknown as { "source-layer"?: string })["source-layer"] ===
-        "transportation_outline",
-    ),
-  );
+test("Super Tile World reads game-board patterns from World ground polygons", () => {
+  for (const target of ["land.render.parkGarden", "land.render.forestCanopy"]) {
+    const layer = layerFor(target) as unknown as { "source-layer": string };
+    assert.equal(layer["source-layer"], "landuse");
+  }
 });

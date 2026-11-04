@@ -121,14 +121,14 @@ function destination(image: string, minZoom = 14): TileflowPoiCategoryStyle {
 const destinations: Partial<Record<TileflowPoiCategory, TileflowPoiCategoryStyle>> = {
   "park-nature": destination("nature", 15), lodging: destination("shelter", 17),
   landmark: { ...destination("monument"), icon: { ...destination("monument").icon,
-    image: expr.match(expr.get(field("poiType")), [
+    image: expr.match(expr.get(field("type")), [
       { labels: ["scenic_viewpoint", "cave", "waterfall"], value: token.image("discovery") },
     ], token.image("monument")) } }, "arts-entertainment": destination("monument"),
   religion: destination("monument", 17), "food-drink": destination("meal", 18),
   "visitor-amenity": destination("discovery", 17), "sport-leisure": destination("discovery", 18),
 };
 destinations.lodging = { ...destination("shelter", 17), icon: { ...destination("shelter", 17).icon,
-  image: expr.match(expr.get(field("poiType")), [
+  image: expr.match(expr.get(field("type")), [
     { labels: ["campground", "campsite", "caravan_site"], value: token.image("camp") },
   ], token.image("shelter")) } };
 
@@ -176,6 +176,7 @@ export const wildlands = defineMap({
   },
   modules: {
     land: land({
+      activityAreas: {fill: {visible: false}},
       background: { color: ink("surface.background"), pattern: token.image("parchment") },
       globalLandcover: { color: ink("land.scrub"), opacity: metric(0.3), maxZoom: 10 },
       landcover: {
@@ -219,7 +220,7 @@ export const wildlands = defineMap({
     }),
     buildings: buildings({ mode: "flat", flat: {
       fill: { minZoom: buildingDetailZoom, color: ink("surface.building"), opacity: metric(0.8) },
-      outline: { minZoom: buildingDetailZoom, color: ink("building.outline"), width: metric(0.7) } }, businessCorridor: { fill: { visible: false } } }),
+      outline: { minZoom: buildingDetailZoom, color: ink("building.outline"), width: metric(0.7) } } }),
     vegetation: withRenderStack(vegetation({ mode: "flat",
       flat: { minZoom: 14, visible: false, opacity: metric(0), strokeOpacity: metric(0) } }), {
       // One drawing per mapped tree point. Woodland polygons never create tree positions.
