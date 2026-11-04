@@ -22,7 +22,7 @@ Roads scale with zoom; close views reveal subdued pedestrian surfaces and crossi
 halos concentrate on prominent buildings. Sector washes distinguish real land uses; station signs
 and major destinations appear first, with local businesses entering at closer zooms. Icons, labels
 and architecture share destination, commercial and nature colour families.
-Core `0.1.0-alpha.35` or newer is required; `npm ci` installs the tested versions in the lockfile.
+Core `0.1.0-alpha.47` or newer is required; `npm ci` installs the tested versions in the lockfile.
 Zooms 0–5 use a dark ocean, depth shading, coastal light and spaced country labels.
 Zooms 3–11 add ranked city markers and progressively introduce the main road network.
 Zooms 11–14 bring forward districts, jade parks and a quiet blue local street grid, before

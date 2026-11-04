@@ -20,7 +20,7 @@ Map ID: `super-tile-world`. Sprite and pattern IDs use the `stw-` prefix.
 This independent showcase is not affiliated with Nintendo. Its complete artwork and font
 attribution is in [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md).
 
-Super Tile World requires Core alpha.40 or newer, including its 3D vegetation and
+Super Tile World requires Core alpha.47 or newer, including its 3D vegetation and
 `buildings.threeDimensional.surfaces` renderer. The exact development dependencies in
 `package-lock.json` provide the matching compiler and CLI.
 The example opens an angled Madrid scene;
