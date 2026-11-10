@@ -33,7 +33,7 @@ export const wildlandsTheme = defineTheme({
       "terrain.contour": "#352F19", "terrain.index": "#302A17", "terrain.text": "#A29464",
       "building.outline": "#8B7950", "trail.ink": "#AFA979",
     },
-    font: { regular: "HyliaSerifBeta-Regular", strong: "HyliaSerifBeta-Regular", fallback: "Noto Sans Regular" },
+    font: { regular: "Alegreya SC Medium", strong: "Alegreya SC Medium", fallback: "Noto Sans Regular" },
     image: {
       tree: "wildlands-tree", treeRound: "wildlands-tree-round", treePine: "wildlands-tree-pine",
       parchment: "wildlands-parchment",
@@ -41,7 +41,7 @@ export const wildlandsTheme = defineTheme({
       meal: "wildlands-meal", discovery: "wildlands-discovery", summit: "wildlands-summit", nature: "wildlands-nature",
     },
   },
-  typography: { font: "HyliaSerifBeta-Regular", fallbacks: ["Noto Sans Regular"], transform: "uppercase" },
+  typography: { font: "Alegreya SC Medium", fallbacks: ["Noto Sans Regular"], transform: "uppercase" },
   lighting: { anchor: "viewport", color: "#F5E9BE", intensity: 0.12, position: [1, 315, 40] },
 });
 

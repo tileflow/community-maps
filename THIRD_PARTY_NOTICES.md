@@ -12,11 +12,9 @@ Wildlands is a new standalone Tileflow map with original SVG symbols, individual
 and a paper pattern, inspired by user-supplied Breath of the Wild map references. No Nintendo artwork,
 Mapbox style, or reference screenshot is included. Code and artwork follow Apache-2.0.
 Its new Sanabria preview uses Tileflow World/OpenStreetMap and Mapterhorn elevation;
-see [Wildlands credits](maps/wildlands/README.md). Wildlands packages the unmodified Hylia Serif
-Beta v0.009 font by Omni Jacala (Artsy Omni) and Noto Sans Regular. Hylia Serif is a fan
-approximation of BOTW lettering and retains its author's conditions, including no redistribution
-for profit; it is not Apache-2.0 or SIL OFL. Noto Sans is SIL OFL 1.1. See
-[font provenance and notices](maps/wildlands/assets/fonts/README.md).
+see [Wildlands credits](maps/wildlands/README.md). Wildlands packages the unmodified Alegreya SC
+Medium font, copyright 2011 The Alegreya Project Authors, and Noto Sans Regular. Both are
+SIL OFL 1.1. See [font provenance and notices](maps/wildlands/assets/fonts/README.md).
 
 ## Oxanium fonts
 

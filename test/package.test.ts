@@ -83,7 +83,7 @@ test(
       );
       assert.ok(
         files.includes(
-          "maps/wildlands/assets/fonts/HyliaSerifBeta-Regular.otf",
+          "maps/wildlands/assets/fonts/AlegreyaSC-Medium.ttf",
         ),
       );
       assert.ok(files.includes("maps/wildlands/assets/fonts/LICENSE.txt"));

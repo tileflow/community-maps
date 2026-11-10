@@ -57,9 +57,9 @@ The native circles are transparent so the preview cannot re-enable a second tree
 
 Edit `index.ts` for the design, `assets/icons/` for the original illustrations, or
 `tileflow.config.ts` for an application-specific extension. The public exports are
-`wildlands`, `wildlandsIcons` and `wildlandsFonts`. Hylia Serif Beta by Artsy Omni supplies
-the BOTW-inspired display lettering, with Noto Sans for missing characters and contour
-measurements. Both fonts are local assets; see [font provenance and conditions](assets/fonts/README.md).
+`wildlands`, `wildlandsIcons` and `wildlandsFonts`. Alegreya SC by Huerta Tipográfica supplies
+the uppercase display lettering, with Noto Sans for road names, missing characters and contour
+measurements. Both fonts are local assets under SIL OFL 1.1; see [font provenance](assets/fonts/README.md).
 No geographic tiles are bundled.
 
 Preview data: © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright),
@@ -68,5 +68,5 @@ Elevation: © [Mapterhorn](https://mapterhorn.com/attribution).
 The preview is a new render of this map. Preserve these credits when displaying it.
 
 Design and original vector artwork created for Tileflow, October 2026, under the repository's
-Apache-2.0 license; fonts retain their separate author conditions. The reference screenshots are not redistributed. This map includes no
+Apache-2.0 license; fonts retain their SIL OFL 1.1 licenses. The reference screenshots are not redistributed. This map includes no
 extracted Nintendo artwork and is not affiliated with Nintendo.
