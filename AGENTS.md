@@ -6,11 +6,13 @@
 - Keep source and artwork attribution, license files, and font provenance with their resources.
 - Do not add private infrastructure, credentials, geographic tile archives, or machine-specific paths.
 - Land changes through a pull request to protected `main`; the `Check maps and package` check must pass.
-- Open pull requests as drafts while work is in progress and mark them ready for review only when
+- Open pull requests as drafts while work is in progress, saying in a `## Draft until` section of
+  the description what each draft waits for, and mark them ready for review only when
   they are complete and can be merged as they are. Do not push after marking ready; convert back to
   draft first (`gh pr ready --undo`). Maintainers merge ready pull requests together in batches, so
   do not merge `main` into a ready pull request or enable auto-merge on it. State dependencies in
-  the description as `Depends on: tileflow/<repo>#<number>`.
+  the description as `Depends on: tileflow/<repo>#<number>`. A complete pull request stacked on
+  another ready one is marked ready too.
 - Run `npm run check:ci` for the fast type and model checks. Use `npm run check` when package, SDK,
   or asset-preparation changes need full validation. Inspect a rendered preview for visual changes.
 - Keep the root gallery, public exports, map IDs, and README examples synchronized.
