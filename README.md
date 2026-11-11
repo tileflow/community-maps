@@ -13,11 +13,12 @@ icons, patterns, fonts, and a ready-to-preview configuration.
 Previews show Madrid. Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright).
 See [preview and asset attribution](THIRD_PARTY_NOTICES.md).
 
-[![Wildlands: an olive adventure atlas of Lake Sanabria](maps/wildlands/preview.webp)](maps/wildlands)
-
-[Wildlands](maps/wildlands) is a new adventure atlas with engraved contours, individually mapped trees,
-cream paths, and original exploration pins. Its preview shows Lake Sanabria: data © OpenStreetMap
-contributors, OpenMapTiles and Tileflow; elevation © [Mapterhorn](https://mapterhorn.com/attribution).
+| Atlas | Design |
+| --- | --- |
+| [1777](maps/map-1777) | Printed fields, forests and settlements, with four times of day. |
+| [Siegfried](maps/siegfried) | Alpine contours and engraved textures in light and dark ink. |
+| [Baedeker](maps/baedeker) | A warm travel atlas with serif lettering. |
+| [Blueprint](maps/blueprint) | The city as an architectural drawing. |
 
 ## Try a map
 
@@ -36,8 +37,6 @@ Open the local address printed by the CLI. To try Terminal, stop the preview and
 npm run preview:terminal
 # Or explore the toy world:
 npm run preview:super-tile-world
-# Or the adventure atlas:
-npm run preview:wildlands
 ```
 
 Preview uses Tileflow World over the network. Local authoring does not require a Tileflow account
@@ -57,7 +56,6 @@ npm run validate:maps
 npm run build:cyberpunk
 npm run build:terminal
 npm run build:super-tile-world
-npm run build:wildlands
 ```
 
 The build commands write each map to `.tileflow/build/<map-id>/`, with styles and resources for
@@ -72,7 +70,7 @@ not published to the npm registry. Choose a full commit SHA from this repository
 `COMMIT_SHA` below, and install it with the compatible Core version:
 
 ```sh
-npm install github:tileflow/community-maps#COMMIT_SHA @tileflow/core@0.1.0-alpha.47
+npm install github:tileflow/community-maps#COMMIT_SHA @tileflow/core@0.1.0-alpha.48
 ```
 
 The Git installation builds the package. Use a Node.js environment with install scripts enabled.
@@ -105,7 +103,15 @@ framework integration. Use the same Core version in the map package and its cons
 | Cyberpunk        | `cyberpunk`      | `cyberpunk`        |
 | Terminal         | `terminal`       | `terminal`         |
 | Super Tile World | `superTileWorld` | `super-tile-world` |
-| Wildlands        | `wildlands`     | `wildlands`       |
+| Baedeker | `baedeker` | `baedeker` |
+| Blueprint | `blueprint` | `blueprint` |
+| 1777 | `map1777` | `map-1777` |
+| Siegfried | `siegfried` | `siegfried` |
+
+Baedeker, Blueprint, 1777 and Siegfried have moved here from `@tileflow/maps`.
+Change their imports to `@tileflow/community-maps`; their export names, map IDs, themes and
+font/icon descriptor names are unchanged. `siegfriedThemes` is exported here too.
+The official package now contains Streets, Soundings and Terrain.
 
 These maps and their assets are maintained here, independently of the official `@tileflow/maps`
 catalog. Import them from `@tileflow/community-maps`. When migrating from older SDK versions,
@@ -121,5 +127,5 @@ Add a new map or improve an existing one through a pull request. Start with
 ## License
 
 The extracted Tileflow code and original artwork retain the [Apache-2.0 license](LICENSE).
-Oxanium, Pixelify Sans, Tile World Arcade, and Noto Sans retain the font licenses shipped beside them. Map data has its own
+Oxanium, Pixelify Sans, Tile World Arcade, Alegreya SC, Cormorant Garamond, DM Serif Text, Barlow Semi Condensed, and Noto Sans retain the font licenses shipped beside them. Map data has its own
 attribution and usage terms. See [NOTICE](NOTICE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
