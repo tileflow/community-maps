@@ -68,29 +68,15 @@ test(
             ),
           );
       assert.ok(
-        files.includes("maps/wildlands/assets/icons/wildlands-tree.svg"),
-      );
-      assert.ok(
-        files.includes("maps/wildlands/assets/icons/wildlands-tree-pine.svg"),
-      );
-      assert.ok(
-        !files.includes(
-          "maps/wildlands/assets/icons/wildlands-forest.pattern.svg",
-        ),
-      );
-      assert.ok(
-        files.includes("maps/wildlands/assets/icons/wildlands-camp.svg"),
-      );
-      assert.ok(
-        files.includes(
-          "maps/wildlands/assets/fonts/AlegreyaSC-Medium.ttf",
-        ),
-      );
-      assert.ok(files.includes("maps/wildlands/assets/fonts/LICENSE.txt"));
-      assert.ok(
         !files.some((file) => /node_modules|^\.env|^test\//u.test(file)),
       );
 
+      for (const id of ['baedeker','map-1777','siegfried']) {
+        assert.ok(files.includes(`maps/${id}/assets/fonts/LICENSE.txt`));
+      }
+      for (const id of ['baedeker','blueprint','map-1777','siegfried']) {
+        assert.ok(files.some(file => file.startsWith(`maps/${id}/assets/icons/`) && file.endsWith('.svg')));
+      }
       const cwd = join(directory, "consumer");
       await mkdir(cwd);
       await writeFile(
@@ -118,7 +104,7 @@ test(
       import assert from 'node:assert/strict';
       import {writeFile} from 'node:fs/promises';
       import {createTileflowBuildArtifacts, disposeTileflowBuildArtifacts} from '@tileflow/dev/artifacts';
-      for (const [name, id, theme, fonts] of [['cyberpunk', 'cyberpunk', 'dark', 2], ['terminal', 'terminal', 'dark', 2], ['superTileWorld', 'super-tile-world', 'light', 3], ['wildlands', 'wildlands', 'parchment', 2]]) {
+      for (const [name, id, theme, fonts] of [['cyberpunk', 'cyberpunk', 'dark', 2], ['terminal', 'terminal', 'dark', 2], ['superTileWorld', 'super-tile-world', 'light', 3], ['baedeker','baedeker','light',3], ['blueprint','blueprint','blueprint',0], ['map1777','map-1777','light',3], ['siegfried','siegfried','light',3]]) {
         await writeFile('tileflow.config.ts',
           "import {" + name + "} from '@tileflow/community-maps'; export default " + name + ";");
         const result = await createTileflowBuildArtifacts({cwd: process.cwd()});

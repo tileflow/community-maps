@@ -6,16 +6,6 @@ Cyberpunk, Terminal, and Super Tile World were extracted from the corresponding 
 Tileflow icon/pattern artwork in `@tileflow/maps`. Their source and artwork retain Apache-2.0.
 See [NOTICE](NOTICE) for origin and modifications. No geographic tile archive is included.
 
-## Wildlands
-
-Wildlands is a new standalone Tileflow map with original SVG symbols, individual tree drawings,
-and a paper pattern, inspired by user-supplied Breath of the Wild map references. No Nintendo artwork,
-Mapbox style, or reference screenshot is included. Code and artwork follow Apache-2.0.
-Its new Sanabria preview uses Tileflow World/OpenStreetMap and Mapterhorn elevation;
-see [Wildlands credits](maps/wildlands/README.md). Wildlands packages the unmodified Alegreya SC
-Medium font, copyright 2011 The Alegreya Project Authors, and Noto Sans Regular. Both are
-SIL OFL 1.1. See [font provenance and notices](maps/wildlands/assets/fonts/README.md).
-
 ## Oxanium fonts
 
 Cyberpunk and Terminal include the unmodified Oxanium Medium and SemiBold TTFs, copyright 2019 The Oxanium
@@ -86,3 +76,89 @@ Super Tile World packages three unmodified static upstream font files and one re
 font preparation pipeline. The adjacent `fonts/README.md` records the pinned source files,
 verified OpenType full names, and the derivative's exact name-table changes. No font is subsetted;
 Pixelify Sans and Noto Sans remain unmodified upstream files.
+
+## 1777 cabinet atlas reference
+
+The `map1777` map and its eleven SVG material patterns (each in four palettes) are
+original Tileflow code and artwork. Their visual reference is the eighteenth-century cabinet
+atlas held by KBR, particularly its watercolor washes, field strokes, tree marks, red
+footprints and serif lettering:
+
+- [Cabinet atlas detail published by KBR](https://www.kbr.be/wp-content/uploads/2026/05/detail-van-de-kabinetskaart.png)
+
+No historical scan, source pixel or atlas geospatial data is included. The map uses current
+Tileflow World data and the separately licensed Cormorant Garamond fonts documented below.
+This package does not redistribute third-party atlas assets, code, style files or textures.
+
+
+## Baedeker map references and terrain data
+
+The `baedeker` map and its eight SVG patterns are original Tileflow code and artwork. Their visual
+grammar was informed by late-nineteenth- and early-twentieth-century Baedeker travel maps and town
+plans engraved by Wagner & Debes.
+
+- Baedeker / Karl Wagner & Debes collection:
+  <https://www.antiquemapsandprints.com/collections/baedeker-karl-wagner-debes?srsltid=AfmBOoqG_2Q_Zje0wPPVYjShDjDZe5aIgH_h08XcPkpu7zFaPvF6n5hq>
+- Maps by Karl Baedeker of Italy:
+  <https://commons.wikimedia.org/wiki/Category:Maps_by_Karl_Baedeker_of_Italy>
+- Moscow I, Wagner & Debes, 1914:
+  <https://imperiia.omeka.fas.harvard.edu/document/2461>
+- Amiens, Baedeker, 1908:
+  <https://commons.wikimedia.org/wiki/File:Amiens_%E2%80%94_Plan_extrait_du_guide_B%C3%A6deker_%E2%80%9CNord-Ouest_de_la_France%E2%80%9E_1908.jpg>
+- Berlin-Westend, Baedeker, 1914:
+  <https://commons.wikimedia.org/wiki/File:Baedeker,_Plan_von_Westend,_1914.jpg>
+
+This package does not include or redistribute a historical scan, raster pixel, historical
+typeface, legend artwork, geospatial data, or source map from either reference. The package
+contains Tileflow-authored style code and original patterns plus the separately licensed Cormorant
+Garamond files documented below. `baedeker` is an official Tileflow map; it is not affiliated with
+or endorsed by Baedeker or Wagner & Debes.
+
+At runtime, Baedeker derives contour vectors in the browser from Tileflow Terrain tiles, which
+carry Mapterhorn terrain data. No terrain tile is packaged or redistributed by `@tileflow/maps`. Mapterhorn publishes the full
+catalog of its constituent open terrain sources and their individual attribution and license terms
+at <https://mapterhorn.com/attribution/>. The compiled Style carries that link as source
+attribution.
+
+
+## Blueprint artwork and terrain data
+
+The Blueprint map (ID `blueprint`) and its four SVG patterns and one SVG technical symbol are original Tileflow
+code and artwork. Its architectural-blueprint direction uses general drafting conventions; this
+package does not include or redistribute an architectural drawing, CAD file, municipal plan,
+survey sheet, font, source image, or third-party symbol artwork.
+
+At runtime, Blueprint derives contour vectors in the browser from Tileflow Terrain tiles, which
+carry Mapterhorn terrain data. No terrain tile is packaged or redistributed by `@tileflow/maps`. Mapterhorn publishes the full
+catalog of its constituent open terrain sources and their individual attribution and license terms
+at <https://mapterhorn.com/attribution/>. The compiled Style carries that link as source
+attribution.
+
+
+## Siegfried Map reference and terrain data
+
+The `siegfried` map and its nine light/dark SVG motif pairs are original Tileflow code and artwork informed by
+swisstopo's history, published examples, and 1873 conventional signs for the Siegfried Map. This
+package does not include or redistribute swisstopo scans, raster pixels, legend artwork, fonts,
+historical geospatial data, or map data. swisstopo is the source of the historical visual reference,
+not of any packaged asset bytes. `siegfried` is an official Tileflow map; it is not affiliated with
+or endorsed by swisstopo. Its dark theme is an original nocturnal engraver's-proof interpretation,
+not a reproduced or historically documented swisstopo colourway.
+
+- Historical reference: <https://www.swisstopo.admin.ch/en/siegfried-map>
+- 1873 conventional signs: <https://www.swisstopo.admin.ch/dam/en/sd-web/4OmbRYHBFpcd/Zeichenerklaerung-Siegfriedkarte-EN.pdf>
+
+At runtime, Siegfried derives contour vectors in the browser from Tileflow Terrain tiles, which
+carry Mapterhorn terrain data. No terrain tile is packaged or redistributed by `@tileflow/maps`. Mapterhorn publishes the full
+catalog of its constituent open terrain sources and their individual attribution and license terms
+at <https://mapterhorn.com/attribution/>. The compiled Style carries that link as source
+attribution.
+
+
+## Cormorant Garamond
+
+Baedeker, 1777 and Siegfried each include their own unmodified Cormorant Garamond Regular,
+SemiBold and Italic font files under `maps/baedeker/assets/fonts/`, `maps/map-1777/assets/fonts/` and
+`maps/siegfried/assets/fonts/`, respectively. These copies are pinned to upstream revision `cc1bfb51ce6568cb3abf9199ab718d543f6fa189`. Cormorant is
+copyright 2015 the Cormorant Project Authors and is distributed under the SIL Open Font License
+1.1 included beside each map's font files as `LICENSE.txt`.

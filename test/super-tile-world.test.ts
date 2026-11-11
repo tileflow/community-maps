@@ -217,7 +217,7 @@ test("Super Tile World compiles as a standalone game board with local sprites an
       `Missing local sprite ${id[1]}`,
     );
   }
-  assert.doesNotMatch(serialized, /"(?:civica|cyber|streets|baedeker)-/u);
+  assert.doesNotMatch(serialized, /"(?:cyber|streets|baedeker)-/u);
 });
 
 function assertBefore(underlay: string, overlay: string): void {

@@ -10,3 +10,7 @@ Super Tile World was extracted from revision d2e09827a37b76a0a5d1750ecec47d02a96
 including its original artwork and font notices. Package resources are relocated and shared
 authoring helpers are adapted to public Core APIs. Font bytes are preserved from the source
 revision, including the documented Tile World Arcade naming derivative.
+
+Baedeker, Blueprint, 1777 and Siegfried are transferred from tileflow/tileflow-sdk
+(packages/maps at 936545a8). Their map definitions and artwork are preserved; package resource
+descriptors and contributor previews now belong to this repository.
