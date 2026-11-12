@@ -11,6 +11,7 @@ including its original artwork and font notices. Package resources are relocated
 authoring helpers are adapted to public Core APIs. Font bytes are preserved from the source
 revision, including the documented Tile World Arcade naming derivative.
 
-Baedeker, Blueprint, 1777 and Siegfried are transferred from tileflow/tileflow-sdk
-(packages/maps at 936545a8). Their map definitions and artwork are preserved; package resource
-descriptors and contributor previews now belong to this repository.
+Baedeker, Blueprint, 1777 and Siegfried are transferred from Tileflow SDK's @tileflow/maps package:
+https://github.com/tileflow/tileflow-sdk/tree/936545a8f3217fb568a44b8bacfad1639983a7a4/packages/maps
+Their map definitions and artwork are preserved; package resource descriptors and contributor
+previews now belong to this repository.
