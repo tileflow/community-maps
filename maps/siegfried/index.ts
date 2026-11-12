@@ -103,9 +103,9 @@ const roadLabel = {
   text: {
     color: siegfriedPalette.ink,
     font: regularFont,
-    haloBlur: 0.15,
+    haloBlur: 0.05,
     haloColor: siegfriedPalette.paper,
-    haloWidth: 1,
+    haloWidth: 1.5,
     letterSpacing: 0.01,
     maxAngle: 24,
     padding: 3,
@@ -138,9 +138,9 @@ const terrainLabel = {
   text: {
     color: siegfriedPalette.ink,
     font: italicFont,
-    haloBlur: 0.15,
+    haloBlur: 0.05,
     haloColor: siegfriedPalette.paper,
-    haloWidth: 0.65,
+    haloWidth: 1.4,
     letterSpacing: 0.06,
     size: zoom.linear([
       [10, 11.5],
@@ -417,7 +417,7 @@ export const siegfried = bindOfficialMapTheme(
             text: {
               color: siegfriedPalette.ink,
               font: semiboldFont,
-              haloBlur: 0.15,
+              haloBlur: 0.05,
               haloColor: siegfriedPalette.paper,
               haloWidth: 1.2,
               letterSpacing: 0.055,
@@ -437,7 +437,7 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: displayFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 1,
+                haloWidth: 1.5,
                 letterSpacing: 0.2,
                 size: zoom.linear([
                   [0, 14],
@@ -452,7 +452,7 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: displayFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 1,
+                haloWidth: 1.5,
                 letterSpacing: 0.16,
                 size: zoom.linear([
                   [1, 15],
@@ -467,7 +467,7 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: displayFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 1,
+                haloWidth: 1.5,
                 letterSpacing: 0.14,
                 size: zoom.linear([
                   [5, 14],
@@ -482,9 +482,9 @@ export const siegfried = bindOfficialMapTheme(
               text: {
                 color: siegfriedPalette.ink,
                 font: displayFont,
-                haloBlur: 0.2,
+                haloBlur: 0.05,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 1.1,
+                haloWidth: 1.6,
                 letterSpacing: 0.08,
                 size: zoom.linear([
                   [4, 16],
@@ -500,7 +500,7 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: semiboldFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 1.1,
+                haloWidth: 1.6,
                 letterSpacing: 0.025,
                 size: zoom.linear([
                   [7, 13],
@@ -515,7 +515,7 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: semiboldFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 1.05,
+                haloWidth: 1.6,
                 letterSpacing: 0.02,
                 size: zoom.linear([
                   [9, 12.5],
@@ -530,7 +530,7 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: semiboldFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 0.95,
+                haloWidth: 1.6,
                 letterSpacing: 0.025,
                 size: zoom.linear([
                   [12, 12],
@@ -545,7 +545,7 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: semiboldFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 0.9,
+                haloWidth: 1.5,
                 letterSpacing: 0.02,
                 size: zoom.linear([
                   [11, 12],
@@ -578,7 +578,7 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: italicFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 0.75,
+                haloWidth: 1.3,
                 letterSpacing: 0.08,
                 size: 12.5,
               },
@@ -588,7 +588,7 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: italicFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 0.7,
+                haloWidth: 1.3,
                 letterSpacing: 0.22,
                 size: zoom.linear([
                   [1, 12],
@@ -602,7 +602,7 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: italicFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 0.7,
+                haloWidth: 1.3,
                 letterSpacing: 0.12,
                 size: zoom.linear([
                   [7, 12],
@@ -616,7 +616,7 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: italicFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 0.7,
+                haloWidth: 1.3,
                 letterSpacing: 0.08,
                 size: zoom.linear([
                   [11, 11.5],
@@ -728,7 +728,7 @@ export const siegfried = bindOfficialMapTheme(
               text: {
                 ...terrainLabel.text,
                 font: semiboldFont,
-                haloWidth: 0.6,
+                haloWidth: 1.4,
                 letterSpacing: 0.025,
                 size: zoom.linear([
                   [9, 12],
