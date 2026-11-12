@@ -137,8 +137,9 @@ attribution.
 
 ## Siegfried Map reference and terrain data
 
-The `siegfried` map and its nine light/dark SVG motif pairs are original Tileflow code and artwork informed by
-swisstopo's history, published examples, and 1873 conventional signs for the Siegfried Map. This
+The `siegfried` map, its nine light/dark SVG motif pairs and 19 POI pictograms are original Tileflow
+code and artwork informed by swisstopo's history, published examples, and 1873 and 1947
+conventional signs for the Siegfried Map. This
 package does not include or redistribute swisstopo scans, raster pixels, legend artwork, fonts,
 historical geospatial data, or map data. swisstopo is the source of the historical visual reference,
 not of any packaged asset bytes. `siegfried` is an official Tileflow map; it is not affiliated with
@@ -147,6 +148,7 @@ not a reproduced or historically documented swisstopo colourway.
 
 - Historical reference: <https://www.swisstopo.admin.ch/en/siegfried-map>
 - 1873 conventional signs: <https://www.swisstopo.admin.ch/dam/en/sd-web/4OmbRYHBFpcd/Zeichenerklaerung-Siegfriedkarte-EN.pdf>
+- 1947 conventional signs: <https://www.swisstopo.admin.ch/dam/en/sd-web/yuIzlsThEgLP/signs%20siegfried%20map%201947-EN.pdf>
 
 At runtime, Siegfried derives contour vectors in the browser from Tileflow Terrain tiles, which
 carry Mapterhorn terrain data. No terrain tile is packaged or redistributed by `@tileflow/maps`. Mapterhorn publishes the full
@@ -157,8 +159,19 @@ attribution.
 
 ## Cormorant Garamond
 
-Baedeker, 1777 and Siegfried each include their own unmodified Cormorant Garamond Regular,
-SemiBold and Italic font files under `maps/baedeker/assets/fonts/`, `maps/map-1777/assets/fonts/` and
-`maps/siegfried/assets/fonts/`, respectively. These copies are pinned to upstream revision `cc1bfb51ce6568cb3abf9199ab718d543f6fa189`. Cormorant is
+Baedeker and 1777 include unmodified Cormorant Garamond Regular, SemiBold and Italic font files
+under `maps/baedeker/assets/fonts/` and `maps/map-1777/assets/fonts/`. Siegfried retains the
+SemiBold face in `maps/siegfried/assets/fonts/`. These copies are pinned to upstream revision
+`cc1bfb51ce6568cb3abf9199ab718d543f6fa189`. Cormorant is
 copyright 2015 the Cormorant Project Authors and is distributed under the SIL Open Font License
 1.1 included beside each map's font files as `LICENSE.txt`.
+
+## Source Serif / Siegfried Text
+
+Siegfried includes three renamed derivatives of Adobe's Source Serif 4 Small Text (Regular,
+Semibold and Italic), pinned to revision `80d3f8894c09c937bebfa9011247d2e1c79fd6f4` of
+<https://github.com/adobe-fonts/source-serif>. Copyright 2014–2023 Adobe. The fonts are distributed
+under the SIL Open Font License 1.1, with Reserved Font Name “Source”. Their derivative family
+is **Siegfried Text**. Only naming records changed for compatibility with canvas font selection;
+outlines, metrics and hinting remain unchanged. Complete licenses, source hashes and preparation
+instructions accompany them in `maps/siegfried/assets/fonts/`.

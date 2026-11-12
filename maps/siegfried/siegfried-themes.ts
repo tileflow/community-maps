@@ -27,9 +27,16 @@ const darkPalette = {
   paper: '#151612',
 } as const satisfies SiegfriedPalette;
 
-const regularFont = 'Cormorant Garamond Regular';
-const semiboldFont = 'Cormorant Garamond SemiBold';
-const italicFont = 'Cormorant Garamond Italic';
+const regularFont = 'Siegfried Text Regular';
+const semiboldFont = 'Siegfried Text Semibold';
+const italicFont = 'Siegfried Text Italic';
+const displayFont = 'Cormorant Garamond SemiBold';
+
+export const siegfriedSymbolNames = [
+  'landmark', 'church', 'worship', 'museum', 'station', 'transport', 'ferry', 'lodging', 'refuge', 'ruins',
+  'viewpoint', 'medical', 'education', 'services', 'food', 'shop', 'park', 'water',
+  'sport',
+] as const;
 
 const patternNames = [
   'forest',
@@ -184,11 +191,19 @@ function createSiegfriedTheme(
       'ink.primary': palette.ink,
       'substrate.paper': palette.paper,
     },
-    images: patternTokens(colorScheme),
+    images: {
+      ...patternTokens(colorScheme),
+      ...Object.fromEntries(siegfriedSymbolNames.map((name) => [
+        `symbols.${name}`, `siegfried-poi-${name}`,
+      ])),
+    },
     numbers: {
       'render.rockMask.opacity': colorScheme === 'light' ? 0.58 : 0.42,
+      'render.building.opacity': colorScheme === 'light' ? 0.94 : 0.52,
+      'render.buildingOutline.opacity': colorScheme === 'light' ? 0.76 : 0.42,
     },
     fonts: {
+      'type.display': displayFont,
       'type.italic': italicFont,
       'type.roman': regularFont,
       'type.semibold': semiboldFont,
@@ -196,9 +211,9 @@ function createSiegfriedTheme(
     typography: {
       font: regularFont,
       letterSpacing: 0.02,
-      places: {font: semiboldFont, letterSpacing: 0.08},
-      poi: {font: regularFont, letterSpacing: 0.03},
-      roads: {font: regularFont, letterSpacing: 0.04},
+      places: {font: semiboldFont, letterSpacing: 0.025},
+      poi: {font: regularFont, letterSpacing: 0.01},
+      roads: {font: regularFont, letterSpacing: 0.01},
       water: {font: italicFont, letterSpacing: 0.1},
     },
     lighting: {
@@ -225,6 +240,7 @@ export const siegfriedVisual = Object.freeze({
     paper: token.color('substrate.paper'),
   },
   font: {
+    display: token.font('type.display'),
     italic: token.font('type.italic'),
     regular: token.font('type.roman'),
     semibold: token.font('type.semibold'),
@@ -232,7 +248,12 @@ export const siegfriedVisual = Object.freeze({
   pattern: Object.fromEntries(
     patternNames.map((name) => [name, token.image(`patterns.${name}`)]),
   ) as Record<(typeof patternNames)[number], ReturnType<typeof token.image>>,
+  symbol: Object.fromEntries(
+    siegfriedSymbolNames.map((name) => [name, token.image(`symbols.${name}`)]),
+  ) as Record<(typeof siegfriedSymbolNames)[number], ReturnType<typeof token.image>>,
   number: {
     rockMaskOpacity: token.number('render.rockMask.opacity'),
+    buildingOpacity: token.number('render.building.opacity'),
+    buildingOutlineOpacity: token.number('render.buildingOutline.opacity'),
   },
 });

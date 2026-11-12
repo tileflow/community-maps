@@ -1,24 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-  <g fill="none" stroke="#79A9D6" stroke-linecap="round" stroke-linejoin="round">
-    <path
-      d="M-10 15C5 7 17 8 30 15s26 7 39-1 25-8 38 0 18 8 29 1M-8 48c14-8 25-5 37 1s24 5 37-3 25-8 39-1 20 8 31 3M-9 84c15-7 27-6 39 1s25 7 38-2 25-9 38-2 19 8 31 3M-8 116c13-8 24-6 36 1s25 7 38-1 25-9 39-2 20 8 31 2"
-      stroke-width=".72"
-      opacity=".34"
-    />
-    <path
-      d="M1 31c13-8 24-5 35-6M42 9c12-5 22-3 33 2M61 66c13-8 25-4 37-9M6 100c12-7 22-5 34-1M83 104c15-7 27-5 42-3M98 31c10-5 19-4 28-1"
-      stroke-width=".46"
-      opacity=".27"
-    />
-    <path
-      d="M20 7c4 6 4 12 1 18M49 35c-3 8-1 15 5 21M79 2c7 5 10 11 9 19M109 8c-3 7-2 13 3 19M17 90c6 5 7 11 4 19M57 98c-2 8 1 15 8 20M91 69c7 5 10 11 9 19M116 51c-4 6-4 12 0 18"
-      stroke-width=".9"
-      opacity=".46"
-    />
-    <path
-      d="M29 62c8 2 14 7 19 14M68 37c7 2 12 6 16 12M3 69c6 1 11 5 15 10M104 91c7 2 12 6 17 11M39 112c5 2 9 6 11 11"
-      stroke-width=".58"
-      opacity=".34"
-    />
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <g fill="none" stroke="#79A9D6" stroke-linecap="round" stroke-linejoin="round" opacity=".38">
+    <path d="M-4 8q8-3 15 0t15-1m7-2q9-4 17 1t18 0M-3 24q9-5 16-1t15-2m7 2q9 5 18 0t15-1M-4 40q7 2 15-2t18 0m8 4q8-5 17-2t14 0M-2 57q10-5 19-1t16-1m6 1q8 4 17 0t12-1" stroke-width=".55"/>
+    <path d="M7 4l2 8m12 3-3 7m24-21 2 8m12 4-4 7M7 31l-2 7m17-4 3 9m22-16-2 7m14 9 2 7M12 49l3 10m17-13-3 7m17 1 2 8" stroke-width=".65"/>
+    <path d="M17 28l6-2m11 13 5-2m17-7 6 1M1 49l6-1m28 16 4-2m-5-48 5 1" stroke-width=".4"/>
   </g>
 </svg>
