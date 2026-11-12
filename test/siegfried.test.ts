@@ -1,5 +1,5 @@
 import {createStyle, createStyleWithInspection} from './atlas-style';
-import {validateStyleMin} from '@maplibre/maplibre-gl-style-spec-v5';
+import {createPropertyExpression, featureFilter, latest, validateStyleMin} from '@maplibre/maplibre-gl-style-spec-v5';
 import assert from 'node:assert/strict';
 import {readdir, readFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -22,12 +22,15 @@ const patternNames = [
 
 const lightIconIds = patternNames.map((name) => `siegfried-${name}`);
 const darkIconIds = patternNames.map((name) => `siegfried-dark-${name}`);
-const iconIds = [...lightIconIds, ...darkIconIds];
+const symbolNames = ['landmark', 'church', 'worship', 'museum', 'station', 'transport', 'ferry', 'lodging', 'refuge', 'ruins', 'viewpoint', 'medical', 'education', 'services', 'food', 'shop', 'park', 'water', 'sport'];
+const symbolIds = symbolNames.map(name => `siegfried-poi-${name}`);
+const iconIds = [...lightIconIds, ...darkIconIds, ...symbolIds];
 
 const fontNames = [
-  'Cormorant Garamond Italic',
-  'Cormorant Garamond Regular',
   'Cormorant Garamond SemiBold',
+  'Siegfried Text Italic',
+  'Siegfried Text Regular',
+  'Siegfried Text Semibold',
 ] as const;
 
 const themePalettes = {
@@ -157,7 +160,7 @@ test('Siegfried is an autonomous map with only its own assets and semantic visua
   assert.equal(resolved.glyphs, undefined);
   assert.equal(resolved.modules?.addresses?.enabled, false);
   assert.equal(resolved.modules?.aeroways?.enabled, false);
-  assert.equal(resolved.modules?.poi?.enabled, false);
+  assert.notEqual(resolved.modules?.poi?.enabled, false);
   assert.equal(resolved.modules?.roads?.oneWayMarkers, false);
   assert.equal(resolved.modules?.roads?.roundabouts?.casing?.visible, false);
   assert.equal(resolved.modules?.roads?.roundabouts?.fill?.visible, false);
@@ -184,8 +187,8 @@ test('Siegfried exposes complete light and dark themes on one map identity', () 
       `${category} token coverage differs by theme`,
     );
   }
-  assert.deepEqual(Object.values(lightTheme.tokens.image).sort(), lightIconIds);
-  assert.deepEqual(Object.values(darkTheme.tokens.image).sort(), darkIconIds);
+  assert.deepEqual(Object.values(lightTheme.tokens.image).sort(), [...lightIconIds, ...symbolIds].sort());
+  assert.deepEqual(Object.values(darkTheme.tokens.image).sort(), [...darkIconIds, ...symbolIds].sort());
 
   for (const theme of ['light', 'dark'] as const) {
     const style = compileSiegfried(theme);
@@ -217,7 +220,8 @@ test('Siegfried dark preserves light topology, structural metrics, and data sour
   const paintMetrics = (layer: (typeof light.layers)[number]) => ({
     id: layer.id,
     metrics: collectNumericMetrics(layer.paint).filter(
-      ([path]) => layer.id !== rockMaskId || path !== 'fill-opacity',
+      ([path]) => !(layer.id === rockMaskId && path === 'fill-opacity') &&
+        !(layer.id.startsWith('tileflow-buildings-') && /^(fill|line)-opacity/u.test(path)),
     ),
   });
 
@@ -344,23 +348,25 @@ test('Siegfried keeps hydrography blue while engraving water names in each key i
   }
 });
 
-test('Siegfried uses its heavier engraved face for overview settlements and road names', () => {
+test('Siegfried uses small-text optical faces for functional labels and display lettering for cities', () => {
   for (const theme of ['light', 'dark'] as const) {
     const style = compileSiegfried(theme);
-    const overviewLabels = style.layers.filter(
-      ({id}) =>
-        id === 'tileflow-label-aerodrome' ||
-        id.startsWith('tileflow-label-place-') ||
-        /^tileflow-label-road-(?:major|minor|primary|secondary|service|tertiary)$/u.test(id),
-    );
-
-    assert.ok(overviewLabels.length >= 15);
-    for (const layer of overviewLabels) {
-      assert.deepEqual(
-        (layer.layout as Record<string, unknown>)['text-font'],
-        ['Cormorant Garamond SemiBold'],
-        `${layer.id} should retain the legible ${theme} overview face`,
-      );
+    for (const [id, font] of [
+      ['tileflow-label-place-city', 'Cormorant Garamond SemiBold'],
+      ['tileflow-label-place-town', 'Siegfried Text Semibold'],
+      ['tileflow-label-place-village', 'Siegfried Text Semibold'],
+      ['tileflow-label-place-neighborhood', 'Siegfried Text Semibold'],
+      ['tileflow-label-road-primary', 'Siegfried Text Regular'],
+      ['tileflow-label-road-minor', 'Siegfried Text Regular'],
+      ['tileflow-label-water-other', 'Siegfried Text Italic'],
+    ]) {
+      const layer = style.layers.find(layer => layer.id === id);
+      assert.ok(layer, `Missing ${id}`);
+      assert.deepEqual(layer.layout?.['text-font'], [font]);
+    }
+    for (const [place, lastSizeStop] of [['town', 15], ['village', 16], ['neighborhood', 17], ['other', 17]] as const) {
+      const layer = style.layers.find(layer => layer.id === `tileflow-label-place-${place}`)!;
+      assert.ok(layer.maxzoom! > lastSizeStop, `${place} disappears before its final size`);
     }
   }
 });
@@ -415,7 +421,9 @@ test('Siegfried enforces separate four-colour Style and SVG palettes per theme',
     };
     const styleColors = collectColorLiterals(renderedStyle);
     assert.ok(styleColors.length > 40);
-    assert.deepEqual(new Set(styleColors), themePalettes[theme]);
+    // The compiler's grouped roads use an unreachable black case fallback.
+    // The road evaluation regression below checks actual eligible features.
+    assert.deepEqual(new Set(styleColors.filter(color => color !== '#000000')), themePalettes[theme]);
   }
 
   const iconsDirectory = path.resolve(
@@ -423,7 +431,7 @@ test('Siegfried enforces separate four-colour Style and SVG palettes per theme',
     '../maps/siegfried/assets/icons',
   );
   const files = (await readdir(iconsDirectory)).filter((file) => file.endsWith('.svg')).sort();
-  assert.deepEqual(files, iconIds.map((id) => `${id}.pattern.svg`).sort());
+  assert.deepEqual(files, [...lightIconIds, ...darkIconIds].map(id => `${id}.pattern.svg`).concat(symbolIds.map(id => `${id}.svg`)).sort());
 
   for (const file of files) {
     const theme = file.startsWith('siegfried-dark-') ? 'dark' : 'light';
@@ -439,7 +447,7 @@ test('Siegfried enforces separate four-colour Style and SVG palettes per theme',
   }
 });
 
-test('both Siegfried themes emit only the three packaged Cormorant faces', () => {
+test('both Siegfried themes emit only their four packaged font faces', () => {
   for (const theme of ['light', 'dark'] as const) {
     const style = compileSiegfried(theme);
     const actual = new Set(
@@ -451,5 +459,113 @@ test('both Siegfried themes emit only the three packaged Cormorant faces', () =>
 
     assert.deepEqual([...actual].sort(), [...fontNames]);
     assert.equal(style.glyphs, undefined);
+  }
+});
+
+function evaluate(layer: ReturnType<typeof compileSiegfried>['layers'][number], property: string,
+  zoom: number, properties: Record<string, unknown> = {}) {
+  const specifications = latest as unknown as Record<string, Record<string, unknown>>;
+  const specification = specifications[`paint_${layer.type}`]?.[property] ??
+    specifications[`layout_${layer.type}`]?.[property];
+  const parsed = createPropertyExpression(layer.paint?.[property] ?? layer.layout?.[property], specification as never);
+  assert.equal(parsed.result, 'success', `${layer.id}.${property}: ${JSON.stringify(parsed.value)}`);
+  if (parsed.result !== 'success') throw new Error(`Invalid ${property}`);
+  return parsed.value.evaluate({zoom}, {type: 2, properties} as never);
+}
+
+test('Siegfried keeps street interiors visible and grouped road colours inside the selected palette', () => {
+  const fixtures = [
+    ['motorway', 'motorway', 6], ['trunk', 'trunk', 7], ['primary', 'primary', 8],
+    ['secondary', 'secondary', 9], ['tertiary', 'tertiary', 11],
+    ['minor', 'street', 12], ['service', 'service', 14],
+  ] as const;
+  for (const theme of ['light', 'dark'] as const) {
+    const compiled = compileSiegfriedInspected(theme);
+    for (const [role, roadClass, start] of fixtures) {
+      const ids = compiled.inspection.layers.filter(layer => layer.contributions.some(
+        contribution => contribution.target === `roads.classes.${role}.surface.fill`,
+      )).map(layer => layer.id);
+      for (const zoom of [start, 14, 16, 19].filter(z => z >= start)) {
+        const properties = {class: roadClass};
+        const layer = compiled.style.layers.find(layer => ids.includes(layer.id) &&
+          zoom >= (layer.minzoom ?? 0) && zoom < (layer.maxzoom ?? 24) &&
+          featureFilter(layer.filter).filter({zoom}, {type: 2, properties}));
+        assert.ok(layer, `Missing visible ${role} fill at z${zoom}`);
+        assert.ok(evaluate(layer, 'line-width', zoom, properties) >= 1,
+          `${role} interior disappears at z${zoom}`);
+      }
+    }
+    const allowed = new Set([...themePalettes[theme]].map(color => {
+      const parsed = createPropertyExpression(color, latest.paint_line['line-color']);
+      assert.equal(parsed.result, 'success');
+      return parsed.result === 'success' ? String(parsed.value.evaluate({zoom: 16})) : '';
+    }));
+    const layers = compiled.style.layers.filter(layer => layer.type === 'line' && layer.id.startsWith('tileflow-road-'));
+    let checked = 0;
+    for (const layer of layers) for (const [, roadClass] of fixtures) {
+      for (const structure of ['surface', 'bridge', 'tunnel']) for (const link of [false, true]) {
+        const properties = {class: roadClass, structure, link};
+        if (!featureFilter(layer.filter).filter({zoom: 16}, {type: 2, properties})) continue;
+        assert.ok(allowed.has(String(evaluate(layer, 'line-color', 16, properties))),
+          `${layer.id} leaks the compiler fallback for ${roadClass}/${structure}/${link}`);
+        checked++;
+      }
+    }
+    assert.ok(checked > 20, 'Road colour fixtures must exercise grouped layers');
+  }
+});
+
+test('Siegfried POIs rank together, keep icons with names, and use themed engraved symbols', async () => {
+  const metadata = JSON.parse(await readFile(new URL('../maps/siegfried/assets/icons/tileflow.icons.json', import.meta.url), 'utf8'));
+  assert.deepEqual(Object.keys(metadata.icons).sort(), [...symbolIds].sort());
+  for (const entry of Object.values(metadata.icons) as Array<{representation: string}>)
+    assert.equal(entry.representation, 'sdf');
+  for (const theme of ['light', 'dark'] as const) {
+    const style = compileSiegfried(theme);
+    const layers = style.layers.filter(layer => layer.id.startsWith('tileflow-poi'));
+    assert.equal(layers.length, 1, 'Categories must share importance order');
+    const poi = layers[0]!;
+    assert.equal(poi.layout?.['icon-optional'], false);
+    assert.equal(poi.layout?.['text-optional'], false);
+    assert.equal(poi.layout?.['text-allow-overlap'], false);
+    assert.equal(poi.paint?.['icon-color'], theme === 'light' ? '#171713' : '#E8E0D0');
+    const accepts = (zoom: number, properties: Record<string, unknown>) =>
+      featureFilter(poi.filter).filter({zoom}, {type: 1, properties: {sizerank: 1, ...properties}});
+    const shop = {class: 'retail', type: 'shop', name: 'Shop', filterrank: 3};
+    assert.equal(accepts(15, shop), false);
+    assert.equal(accepts(18, shop), true);
+    assert.equal(accepts(15, {class: 'landmark', name: 'Castle', filterrank: 1}), true);
+    assert.equal(accepts(15, {class: 'landmark', filterrank: 1}), false);
+    assert.ok(evaluate(poi, 'text-size', 12) >= 12);
+    const images = collectStrings(poi.layout?.['icon-image']).filter(s => s.startsWith('siegfried-'));
+    assert.deepEqual(new Set(images), new Set(symbolIds));
+    assert.ok(style.layers.indexOf(poi) < style.layers.findIndex(layer => layer.id === 'tileflow-label-place-city'),
+      'Settlement labels keep their placement priority over POIs');
+  }
+});
+
+test('Siegfried shore bands exclude rivers and intermittent water and fade buildings from their actual data zoom', () => {
+  for (const theme of ['light', 'dark'] as const) {
+    const compiled = compileSiegfriedInspected(theme);
+    for (const name of ['shoreNear', 'shoreMiddle', 'shoreFar']) {
+      const layer = compiledLayer(compiled, `water.render.${name}`)!;
+      assert.ok(layer);
+      assert.ok(Number(layer.paint?.['line-offset']) > Number(layer.paint?.['line-width']) / 2);
+      const accepts = (properties: Record<string, unknown>) => featureFilter(layer.filter).filter({zoom: 14}, {type: 3, properties});
+      assert.equal(accepts({class: 'lake'}), true);
+      assert.equal(accepts({class: 'ocean'}), true);
+      assert.equal(accepts({class: 'river'}), false);
+      assert.equal(accepts({class: 'lake', intermittent: true}), false);
+      assert.ok(compiledLayerIndex(compiled, `water.render.${name}`) < compiledLayerIndex(compiled, 'water.bodies.outline'));
+    }
+    const buildings = compiledLayer(compiled, 'buildings.flat.fill')!;
+    assert.equal(buildings.minzoom, 15);
+    assert.ok(evaluate(buildings, 'fill-opacity', 15) < evaluate(buildings, 'fill-opacity', 16));
+    assert.equal(evaluate(buildings, 'fill-opacity', 16), theme === 'light' ? 0.94 : 0.52);
+    const orchard = compiledLayer(compiled, 'land.render.orchardPattern')!;
+    const acceptsOrchard = (cl: string) => featureFilter(orchard.filter).filter({zoom: 14}, {type: 3, properties: {class: cl}});
+    assert.equal(acceptsOrchard('orchard'), true);
+    assert.equal(acceptsOrchard('vineyard'), true);
+    assert.equal(acceptsOrchard('garden'), false);
   }
 });

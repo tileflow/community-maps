@@ -104,7 +104,7 @@ test(
       import assert from 'node:assert/strict';
       import {writeFile} from 'node:fs/promises';
       import {createTileflowBuildArtifacts, disposeTileflowBuildArtifacts} from '@tileflow/dev/artifacts';
-      for (const [name, id, theme, fonts] of [['cyberpunk', 'cyberpunk', 'dark', 2], ['terminal', 'terminal', 'dark', 2], ['superTileWorld', 'super-tile-world', 'light', 3], ['baedeker','baedeker','light',3], ['blueprint','blueprint','blueprint',0], ['map1777','map-1777','light',3], ['siegfried','siegfried','light',3]]) {
+      for (const [name, id, theme, fonts] of [['cyberpunk', 'cyberpunk', 'dark', 2], ['terminal', 'terminal', 'dark', 2], ['superTileWorld', 'super-tile-world', 'light', 3], ['baedeker','baedeker','light',3], ['blueprint','blueprint','blueprint',0], ['map1777','map-1777','light',3], ['siegfried','siegfried','light',4]]) {
         await writeFile('tileflow.config.ts',
           "import {" + name + "} from '@tileflow/community-maps'; export default " + name + ";");
         const result = await createTileflowBuildArtifacts({cwd: process.cwd()});

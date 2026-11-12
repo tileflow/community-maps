@@ -15,6 +15,7 @@ import {
   type TileflowRoadClassStyle,
   type TileflowSymbolStyle,
   type TileflowThemeImageValue,
+  type TileflowThemeNumberValue,
   transit,
   water,
   withRenderStack,
@@ -22,6 +23,7 @@ import {
 } from '@tileflow/core';
 import {siegfriedFonts, siegfriedIcons} from './assets';
 import {siegfriedThemes, siegfriedVisual} from './siegfried-themes';
+import {siegfriedPoi} from './siegfried-poi';
 import {bindOfficialMapTheme} from '../../src/shared/atlas-theme-helpers';
 
 /**
@@ -36,9 +38,12 @@ const siegfriedPalette = {
 } as const;
 const semiboldFont = siegfriedVisual.font.semibold;
 const italicFont = siegfriedVisual.font.italic;
+const regularFont = siegfriedVisual.font.regular;
+const displayFont = siegfriedVisual.font.display;
 
 function engravedRoad(
   minZoom: number,
+  widths: readonly (readonly [number, number])[],
   options: {
     casingOpacity?: number;
     fillOpacity?: number;
@@ -49,11 +54,13 @@ function engravedRoad(
     color: siegfriedPalette.ink,
     minZoom,
     opacity: options.casingOpacity ?? 0.88,
+    width: zoom.linear(widths.map(([z, width]) => [z, width + 1.1] as const)),
   };
   const fill = {
     color: siegfriedPalette.paper,
     minZoom,
     opacity: options.fillOpacity ?? 0.98,
+    width: zoom.linear(widths),
   };
   const tunnelOpacity = options.tunnelOpacity ?? 0.46;
 
@@ -95,17 +102,17 @@ const roadLabel = {
   spacing: 360,
   text: {
     color: siegfriedPalette.ink,
-    font: semiboldFont,
-    haloBlur: 0.15,
+    font: regularFont,
+    haloBlur: 0.05,
     haloColor: siegfriedPalette.paper,
-    haloWidth: 1,
-    letterSpacing: 0.04,
+    haloWidth: 1.5,
+    letterSpacing: 0.01,
     maxAngle: 24,
     padding: 3,
     size: zoom.linear([
-      [10, 9.25],
-      [13, 10.25],
-      [17, 12.5],
+      [10, 11.5],
+      [13, 12.5],
+      [18, 14],
     ]),
   },
 } satisfies TileflowSymbolStyle;
@@ -119,8 +126,8 @@ const pathLabel = {
     ...roadLabel.text,
     font: italicFont,
     size: zoom.linear([
-      [16, 8],
-      [19, 10.5],
+      [16, 11.5],
+      [19, 13],
     ]),
   },
 } satisfies TileflowSymbolStyle;
@@ -131,19 +138,42 @@ const terrainLabel = {
   text: {
     color: siegfriedPalette.ink,
     font: italicFont,
-    haloBlur: 0.15,
+    haloBlur: 0.05,
     haloColor: siegfriedPalette.paper,
-    haloWidth: 0.65,
-    letterSpacing: 0.16,
+    haloWidth: 1.4,
+    letterSpacing: 0.06,
     size: zoom.linear([
-      [10, 9],
-      [16, 12.5],
+      [10, 11.5],
+      [16, 14],
     ]),
   },
 } satisfies TileflowSymbolStyle;
 
 const landformName = expr.coalesce(expr.get(field('name')), '');
 const landformElevation = expr.get(field('elevation'));
+
+/** Polygon offsets are inward in MapLibre. Small bands stay inside narrow shorelines. */
+function shoreBand(offset: number, width: number, opacity: number) {
+  return renderPass({
+    placement: {below: 'water.bodies.outline'},
+    feature: 'water',
+    renderer: 'line',
+    selector: {kind: 'all', selectors: [
+      {field: 'intermittent', kind: 'compare', operator: 'ne', value: true},
+      {field: 'class', kind: 'in', values: ['lake', 'ocean']},
+    ]},
+    style: {
+      color: siegfriedPalette.blue,
+      minZoom: 9,
+      opacity: zoom.linear([[9, 0], [11, opacity]]),
+      offset,
+      width,
+      blur: width * 0.6,
+      join: 'round',
+    },
+  });
+}
+
 const landformLabelWithoutUnit = expr.case(
   [
     {
@@ -291,7 +321,7 @@ export const siegfried = bindOfficialMapTheme(
           haloWidth: 0.6,
           minZoom: 13,
           opacity: 0.86,
-          size: 10,
+          size: 11.5,
           spacing: 380,
         },
         maxZoom: 14,
@@ -358,18 +388,18 @@ export const siegfried = bindOfficialMapTheme(
         flat: {
           fill: {
             color: siegfriedPalette.ink,
-            minZoom: 13,
-            opacity: zoom.linear([
-              [13, 0],
-              [14, 0.9],
-              [16, 1],
+            // World currently supplies building footprints from z15.
+            minZoom: 15,
+            opacity: expr.interpolate<TileflowThemeNumberValue>({kind: 'linear'}, expr.zoom(), [
+              [15, 0.35],
+              [16, siegfriedVisual.number.buildingOpacity],
             ]),
           },
           outline: {
             color: siegfriedPalette.ink,
-            minZoom: 14,
-            opacity: 0.92,
-            width: 0.45,
+            minZoom: 15,
+            opacity: siegfriedVisual.number.buildingOutlineOpacity,
+            width: 0.3,
           },
         },
         mode: 'flat',
@@ -387,7 +417,7 @@ export const siegfried = bindOfficialMapTheme(
             text: {
               color: siegfriedPalette.ink,
               font: semiboldFont,
-              haloBlur: 0.15,
+              haloBlur: 0.05,
               haloColor: siegfriedPalette.paper,
               haloWidth: 1.2,
               letterSpacing: 0.055,
@@ -405,13 +435,13 @@ export const siegfried = bindOfficialMapTheme(
               minZoom: 0,
               text: {
                 color: siegfriedPalette.ink,
-                font: semiboldFont,
+                font: displayFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 1,
+                haloWidth: 1.5,
                 letterSpacing: 0.2,
                 size: zoom.linear([
-                  [0, 11],
-                  [4, 16],
+                  [0, 14],
+                  [4, 19],
                 ]),
                 transform: 'uppercase',
               },
@@ -420,13 +450,13 @@ export const siegfried = bindOfficialMapTheme(
               minZoom: 1,
               text: {
                 color: siegfriedPalette.ink,
-                font: semiboldFont,
+                font: displayFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 1,
+                haloWidth: 1.5,
                 letterSpacing: 0.16,
                 size: zoom.linear([
-                  [1, 11],
-                  [8, 19],
+                  [1, 15],
+                  [8, 22],
                 ]),
                 transform: 'uppercase',
               },
@@ -435,87 +465,91 @@ export const siegfried = bindOfficialMapTheme(
               minZoom: 5,
               text: {
                 color: siegfriedPalette.ink,
-                font: semiboldFont,
+                font: displayFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 1,
+                haloWidth: 1.5,
                 letterSpacing: 0.14,
                 size: zoom.linear([
-                  [5, 10],
-                  [10, 14],
+                  [5, 14],
+                  [10, 18],
                 ]),
                 transform: 'uppercase',
               },
             },
             city: {
               minZoom: 4,
+              maxZoom: 16,
               text: {
                 color: siegfriedPalette.ink,
-                font: semiboldFont,
-                haloBlur: 0.2,
+                font: displayFont,
+                haloBlur: 0.05,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 1.1,
-                letterSpacing: 0.12,
+                haloWidth: 1.6,
+                letterSpacing: 0.08,
                 size: zoom.linear([
-                  [4, 12],
-                  [14, 21],
+                  [4, 16],
+                  [14, 25],
                 ]),
                 transform: 'uppercase',
               },
             },
             town: {
               minZoom: 7,
+              maxZoom: 17,
               text: {
                 color: siegfriedPalette.ink,
                 font: semiboldFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 1.1,
-                letterSpacing: 0.08,
+                haloWidth: 1.6,
+                letterSpacing: 0.025,
                 size: zoom.linear([
-                  [7, 11],
-                  [15, 16.5],
+                  [7, 13],
+                  [15, 17],
                 ]),
-                transform: 'uppercase',
               },
             },
             village: {
               minZoom: 9,
+              maxZoom: 18,
               text: {
                 color: siegfriedPalette.ink,
                 font: semiboldFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 1.05,
-                letterSpacing: 0.05,
+                haloWidth: 1.6,
+                letterSpacing: 0.02,
                 size: zoom.linear([
-                  [9, 10.75],
-                  [16, 14.25],
+                  [9, 12.5],
+                  [16, 15.5],
                 ]),
               },
             },
             neighborhood: {
               minZoom: 12,
+              maxZoom: 19,
               text: {
                 color: siegfriedPalette.ink,
                 font: semiboldFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 0.95,
-                letterSpacing: 0.08,
+                haloWidth: 1.6,
+                letterSpacing: 0.025,
                 size: zoom.linear([
-                  [12, 9],
-                  [17, 12],
+                  [12, 12],
+                  [17, 14],
                 ]),
               },
             },
             other: {
               minZoom: 11,
+              maxZoom: 19,
               text: {
                 color: siegfriedPalette.ink,
                 font: semiboldFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 0.9,
-                letterSpacing: 0.04,
+                haloWidth: 1.5,
+                letterSpacing: 0.02,
                 size: zoom.linear([
-                  [11, 9],
-                  [17, 12],
+                  [11, 12],
+                  [17, 14],
                 ]),
               },
             },
@@ -544,9 +578,9 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: italicFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 0.75,
+                haloWidth: 1.3,
                 letterSpacing: 0.08,
-                size: 11,
+                size: 12.5,
               },
             },
             ocean: {
@@ -554,7 +588,7 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: italicFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 0.7,
+                haloWidth: 1.3,
                 letterSpacing: 0.22,
                 size: zoom.linear([
                   [1, 12],
@@ -568,11 +602,11 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: italicFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 0.7,
+                haloWidth: 1.3,
                 letterSpacing: 0.12,
                 size: zoom.linear([
-                  [7, 10],
-                  [15, 14],
+                  [7, 12],
+                  [15, 16],
                 ]),
               },
             },
@@ -582,11 +616,11 @@ export const siegfried = bindOfficialMapTheme(
                 color: siegfriedPalette.ink,
                 font: italicFont,
                 haloColor: siegfriedPalette.paper,
-                haloWidth: 0.7,
+                haloWidth: 1.3,
                 letterSpacing: 0.08,
                 size: zoom.linear([
-                  [11, 9],
-                  [17, 12],
+                  [11, 11.5],
+                  [17, 13.5],
                 ]),
               },
             },
@@ -648,7 +682,11 @@ export const siegfried = bindOfficialMapTheme(
             parking: {fill: {visible: false}, outline: {visible: false}},
             railway: {fill: {color: siegfriedPalette.paper, minZoom: 12, opacity: 0.12}},
             recreation: {fill: {color: siegfriedPalette.paper, minZoom: 11, opacity: 0.08}},
-            residential: {fill: {color: siegfriedPalette.paper, minZoom: 10, opacity: 0.06}},
+            residential: {fill: {
+              color: siegfriedPalette.ink,
+              minZoom: 10,
+              opacity: zoom.linear([[10, 0], [12, 0.035], [14, 0.035], [16, 0.015]]),
+            }},
           },
         }),
         {
@@ -665,10 +703,10 @@ export const siegfried = bindOfficialMapTheme(
             {minZoom: 10, opacity: 0.64},
           ),
           orchardPattern: landcoverPattern(
-            'land.landcover.urbanPark.fill',
+            'land.landcover.farmland.fill',
             siegfriedVisual.pattern.orchard,
-            ['garden'],
-            {excludeTypes: ['flowerbed'], minZoom: 12, opacity: 0.62},
+            ['orchard', 'vineyard'],
+            {minZoom: 12, opacity: 0.62},
           ),
           wetlandPattern: landcoverPattern(
             'land.landcover.wetland.fill',
@@ -690,13 +728,12 @@ export const siegfried = bindOfficialMapTheme(
               text: {
                 ...terrainLabel.text,
                 font: semiboldFont,
-                haloWidth: 0.6,
-                letterSpacing: 0.1,
-                size: expr.interpolate({kind: 'linear'}, expr.toNumber(landformElevation, 0), [
-                  [0, 10],
-                  [2_500, 11.5],
-                  [4_000, 15],
-                  [4_500, 16.5],
+                haloWidth: 1.4,
+                letterSpacing: 0.025,
+                size: zoom.linear([
+                  [9, 12],
+                  [13, 14],
+                  [17, 16],
                 ]),
               },
             },
@@ -715,7 +752,7 @@ export const siegfried = bindOfficialMapTheme(
           volcanoLabel: omitLandformElevationUnit('volcano'),
         },
       ),
-      poi: disable(),
+      poi: siegfriedPoi,
       roads: roads({
         areas: {
           pedestrian: {
@@ -731,17 +768,17 @@ export const siegfried = bindOfficialMapTheme(
         classes: {
           cycleway: engravedPath(15, [3, 2], 0.52),
           footway: engravedPath(15, [0.45, 1.25], 0.68),
-          minor: engravedRoad(12, {casingOpacity: 0.72}),
-          motorway: engravedRoad(6, {casingOpacity: 0.92}),
+          minor: engravedRoad(12, [[12, 1.1], [14, 1.6], [16, 3.2], [19, 7]], {casingOpacity: 0.72}),
+          motorway: engravedRoad(6, [[6, 1], [12, 3], [16, 5.5], [19, 9]], {casingOpacity: 0.92}),
           pathway: engravedPath(14, [1.2, 1.5], 0.68),
           pedestrian: engravedPath(15, [0.45, 1.25], 0.58),
-          primary: engravedRoad(8, {casingOpacity: 0.9}),
-          secondary: engravedRoad(9, {casingOpacity: 0.84}),
-          service: engravedRoad(14, {casingOpacity: 0.58, fillOpacity: 0.9}),
+          primary: engravedRoad(8, [[8, 1], [12, 2], [16, 4.6], [19, 8]], {casingOpacity: 0.9}),
+          secondary: engravedRoad(9, [[9, 1], [12, 1.5], [16, 3.8], [19, 7]], {casingOpacity: 0.84}),
+          service: engravedRoad(14, [[14, 1], [16, 1.8], [19, 4]], {casingOpacity: 0.55, fillOpacity: 0.98}),
           steps: engravedPath(16, [0.25, 0.55], 0.62),
-          tertiary: engravedRoad(11, {casingOpacity: 0.78}),
+          tertiary: engravedRoad(11, [[11, 1], [14, 2], [16, 3.5], [19, 7]], {casingOpacity: 0.78}),
           track: engravedPath(13, [3, 1.6], 0.72),
-          trunk: engravedRoad(7, {casingOpacity: 0.92}),
+          trunk: engravedRoad(7, [[7, 1], [12, 2.6], [16, 5], [19, 9]], {casingOpacity: 0.92}),
         },
         crossings: {image: siegfriedVisual.pattern['paper-grain'], visible: false},
         detail: 'all',
@@ -809,9 +846,9 @@ export const siegfried = bindOfficialMapTheme(
         ferry: {
           color: siegfriedPalette.blue,
           dash: [4, 3],
-          minZoom: 6,
-          opacity: 0.62,
-          width: 0.7,
+          minZoom: 10,
+          opacity: 0.32,
+          width: 0.6,
         },
         rail: {
           bridge: {color: siegfriedPalette.ink, minZoom: 7, opacity: 0.96, width: 1.35},
@@ -830,8 +867,8 @@ export const siegfried = bindOfficialMapTheme(
           tunnel: {visible: false},
         },
         serviceRail: {
-          bridge: {color: siegfriedPalette.ink, minZoom: 12, opacity: 0.62, width: 0.75},
-          surface: {color: siegfriedPalette.ink, minZoom: 12, opacity: 0.58, width: 0.7},
+          bridge: {color: siegfriedPalette.ink, minZoom: 14, opacity: 0.48, width: 0.65},
+          surface: {color: siegfriedPalette.ink, minZoom: 14, opacity: 0.42, width: 0.6},
           tunnel: {
             color: siegfriedPalette.ink,
             dash: [2, 1.5],
@@ -846,7 +883,7 @@ export const siegfried = bindOfficialMapTheme(
         water({
           bathymetry: {visible: false},
           bodies: {
-            fill: {color: siegfriedPalette.blue, opacity: 0.19},
+            fill: {color: siegfriedPalette.blue, opacity: 0.12},
             outline: {
               color: siegfriedPalette.blue,
               minZoom: 5,
@@ -986,12 +1023,15 @@ export const siegfried = bindOfficialMapTheme(
               minZoom: 7,
               opacity: zoom.linear([
                 [7, 0],
-                [9, 0.48],
-                [16, 0.32],
+                [9, 0.35],
+                [16, 0.28],
               ]),
               pattern: siegfriedVisual.pattern['water-lines'],
             },
           }),
+          shoreNear: shoreBand(1.5, 2.5, 0.28),
+          shoreMiddle: shoreBand(4, 3, 0.16),
+          shoreFar: shoreBand(7, 3, 0.07),
           intermittentWaterLines: renderPass({
             placement: {above: 'water.intermittent.bodies.fill'},
             feature: 'water',

@@ -16,7 +16,7 @@ See [preview and asset attribution](THIRD_PARTY_NOTICES.md).
 | Atlas | Design |
 | --- | --- |
 | [1777](maps/map-1777) | Printed fields, forests and settlements, with four times of day. |
-| [Siegfried](maps/siegfried) | Alpine contours and engraved textures in light and dark ink. |
+| [Siegfried](maps/siegfried) | Engraved roads, blue shore shading, readable serif labels and monochrome POIs. |
 | [Baedeker](maps/baedeker) | A warm travel atlas with serif lettering. |
 | [Blueprint](maps/blueprint) | The city as an architectural drawing. |
 
