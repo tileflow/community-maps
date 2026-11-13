@@ -17,7 +17,7 @@ See [preview and asset attribution](THIRD_PARTY_NOTICES.md).
 | --- | --- |
 | [1777](maps/map-1777) | Printed fields, forests and settlements, with four times of day. |
 | [Siegfried](maps/siegfried) | Alpine contours and engraved textures in light and dark ink. |
-| [Watercolor](maps/watercolor) | Soft pigment, turquoise water and clear labels, in flat 2D. |
+| [Watercolor](maps/watercolor) | Soft pigment, turquoise water and clear labels, from globe to street. |
 | [Blueprint](maps/blueprint) | The city as an architectural drawing. |
 
 ## Try a map

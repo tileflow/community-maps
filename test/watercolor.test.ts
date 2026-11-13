@@ -9,7 +9,7 @@ import {
 } from '@tileflow/core';
 import {watercolor, watercolorFonts, watercolorIcons} from '../src';
 
-test('Watercolor compiles independently as a single flat appearance without scene resources', async () => {
+test('Watercolor compiles independently as one top-down appearance with a globe and no scene resources', async () => {
   const resolved = resolveMap(watercolor);
   assert.ok(Object.isFrozen(watercolor));
   assert.equal('extends' in watercolor, false);
@@ -29,7 +29,7 @@ test('Watercolor compiles independently as a single flat appearance without scen
     preparedAssets: {icons: {ids, sprite: '/watercolor/sprite'}},
   });
   assert.deepEqual(validateStyleMin(style as never), []);
-  assert.deepEqual(style.projection, {type: 'mercator'});
+  assert.deepEqual(style.projection, {type: 'globe'});
   assert.equal(style.sky, undefined);
   assert.equal(style.terrain, undefined);
   for (const key of [

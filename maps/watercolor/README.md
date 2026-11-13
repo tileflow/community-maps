@@ -2,7 +2,8 @@
 
 An independent community map by Tileflow: turquoise water, olive and sap-green washes,
 peach urban areas and lavender buildings on warm paper. Soft shores and granular pigment
-sit below crisp Lato street names and restrained place markers. One appearance, flat 2D.
+sit below crisp Lato street names and restrained place markers. One appearance, a globe
+when zoomed out and a top-down 2D map when zoomed in.
 
 ![Watercolor in London](preview.webp)
 
@@ -29,7 +30,9 @@ export default defineMap({
 });
 ```
 
-The `london`, `detail`, `coast`, `countryside` and `mobile` capture scenes review street and
+The `globe`, `iberia`, `regional` and `landscape` scenes review the world view and gradual
+transition from continuous physical cover to detailed land use across zooms 8–11. The
+`london`, `detail`, `coast`, `countryside` and `mobile` scenes review street and
 POI legibility, urban blocks, parks and open water. The map has no terrain, 3D buildings,
 tree models, sky or time-of-day variants. Its camera policy keeps pitch at zero.
 

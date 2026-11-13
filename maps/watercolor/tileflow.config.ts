@@ -4,6 +4,8 @@ import {
   defineMap,
   defineTheme,
   disable,
+  expr,
+  field,
   fixed,
   labels,
   land,
@@ -53,6 +55,14 @@ const n = (value: number) =>
   fixed(value, {reason: 'Watercolor has one fixed printed appearance.'});
 const z = (stops: readonly (readonly [number, number])[]) =>
   zoom.linear(stops.map(([level, value]) => [level, n(value)] as const));
+const groundOpacity = (opacity: number) =>
+  z([
+    [8, 0],
+    [9, opacity * 0.35],
+    [10, opacity * 0.65],
+    [11, opacity * 0.85],
+    [12, opacity],
+  ]);
 const patternNames = [
   'paper',
   'water',
@@ -111,8 +121,27 @@ function paintedArea(
   opacity = 1,
 ): TileflowAreaStyle {
   return {
-    fill: {color: c(pigment), pattern: wash(texture), opacity: n(opacity)},
-    outline: {color: c(edge), width: n(5), blur: n(4), opacity: n(0.25)},
+    fill: {
+      color: c(pigment),
+      pattern: wash(texture),
+      minZoom: 8,
+      opacity: groundOpacity(opacity),
+    },
+    outline: {
+      color: c(edge),
+      minZoom: 8,
+      width: z([
+        [8, 1],
+        [10, 3],
+        [13, 5],
+      ]),
+      blur: z([
+        [8, 1],
+        [10, 2.5],
+        [13, 4],
+      ]),
+      opacity: groundOpacity(0.25),
+    },
   };
 }
 
@@ -246,7 +275,7 @@ export default defineMap({
   models: [],
   themes: {watercolor: theme},
   defaultTheme: 'watercolor',
-  projection: 'mercator',
+  projection: 'globe',
   terrain: 'none',
   atmosphere: false,
   sky: false,
@@ -260,7 +289,40 @@ export default defineMap({
     land: withRenderStack(
       land({
         background: {color: c('paper'), pattern: wash('paper')},
-        globalLandcover: {opacity: n(0.2)},
+        // World supplies continuous physical cover through z10. Keep its washes under
+        // the detailed OSM polygons, fading out before the source stops at z11.
+        globalLandcover: {
+          minZoom: 0,
+          maxZoom: 11,
+          color: expr.match(
+            field('class'),
+            [
+              {labels: ['trees', 'grass', 'shrub'], value: c('green')},
+              {labels: 'crop', value: c('gold')},
+              {labels: 'urban', value: c('urban')},
+              {labels: 'barren', value: c('sand')},
+              {labels: 'snow', value: c('ice')},
+            ],
+            c('paper'),
+          ),
+          pattern: expr.match(
+            field('class'),
+            [
+              {labels: ['trees', 'grass', 'shrub'], value: wash('green')},
+              {labels: 'crop', value: wash('gold')},
+              {labels: 'urban', value: wash('urban')},
+            ],
+            wash('paper'),
+          ),
+          opacity: z([
+            [0, 0.58],
+            [6, 0.65],
+            [8, 0.65],
+            [9, 0.5],
+            [10, 0.28],
+            [11, 0],
+          ]),
+        },
         landcover: {
           wood: paintedArea('green', 'green', 'greenEdge'),
           urbanPark: paintedArea('green', 'green', 'greenEdge'),
@@ -272,9 +334,9 @@ export default defineMap({
           protected: {fill: {visible: false}, outline: {visible: false}},
           farmland: paintedArea('gold', 'gold', 'path', 0.8),
           flowerbed: paintedArea('gold', 'gold', 'coral'),
-          sand: {fill: {color: c('sand'), opacity: n(0.85)}},
-          ice: {fill: {color: c('ice')}},
-          rock: {fill: {color: c('rock'), opacity: n(0.7)}},
+          sand: {fill: {color: c('sand'), opacity: groundOpacity(0.85)}},
+          ice: {fill: {color: c('ice'), opacity: groundOpacity(1)}},
+          rock: {fill: {color: c('rock'), opacity: groundOpacity(0.7)}},
           wetland: paintedArea('water', 'water', 'greenEdge', 0.4),
         },
         landuse: {
@@ -286,8 +348,8 @@ export default defineMap({
           medical: paintedArea('urban', 'urban', 'coral', 0.8),
           industrial: paintedArea('building', 'building', 'buildingEdge', 0.4),
           military: paintedArea('building', 'building', 'buildingEdge', 0.25),
-          parking: {fill: {color: c('paper'), opacity: n(0.6)}},
-          railway: {fill: {color: c('rock'), opacity: n(0.3)}},
+          parking: {fill: {color: c('paper'), opacity: groundOpacity(0.6)}},
+          railway: {fill: {color: c('rock'), opacity: groundOpacity(0.3)}},
           cemetery: paintedArea('green', 'green', 'greenEdge', 0.75),
           recreation: paintedArea('green', 'green', 'greenEdge', 0.8),
         },
@@ -459,8 +521,36 @@ export default defineMap({
       roadGrouping: 'network',
       styles: {
         places: {
-          continent: place(23),
-          country: place(20),
+          continent: {
+            ...place(23),
+            text: {
+              ...place(23).text,
+              size: z([
+                [0, 11],
+                [2, 17],
+                [3, 23],
+              ]),
+              opacity: z([
+                [0.8, 0],
+                [1.5, 1],
+              ]),
+            },
+          },
+          country: {
+            ...place(20, 1.8),
+            text: {
+              ...place(20).text,
+              size: z([
+                [1.8, 11],
+                [3, 14],
+                [5, 20],
+              ]),
+              opacity: z([
+                [1.8, 0],
+                [2.8, 1],
+              ]),
+            },
+          },
           state: place(16),
           city: place(18),
           town: place(15),
@@ -549,6 +639,26 @@ export default defineMap({
     }),
   },
   scenes: {
+    globe: {
+      theme: 'watercolor',
+      camera: {type: 'center', center: [-4, 35], zoom: 1.8},
+      viewport: {width: 1440, height: 900, dpr: 1},
+    },
+    iberia: {
+      theme: 'watercolor',
+      camera: {type: 'center', center: [-4, 40], zoom: 5.8},
+      viewport: {width: 1440, height: 900, dpr: 1},
+    },
+    regional: {
+      theme: 'watercolor',
+      camera: {type: 'center', center: [-4.6, 40.3], zoom: 8},
+      viewport: {width: 1440, height: 900, dpr: 1},
+    },
+    landscape: {
+      theme: 'watercolor',
+      camera: {type: 'center', center: [-4.6, 40.3], zoom: 10},
+      viewport: {width: 1440, height: 900, dpr: 1},
+    },
     london: {
       theme: 'watercolor',
       camera: {type: 'center', center: [-0.133, 51.505], zoom: 13.2},
