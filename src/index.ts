@@ -32,3 +32,7 @@ import {siegfried as siegfriedDefinition} from '../maps/siegfried';
 export const siegfried = freezeCommunityMap(siegfriedDefinition);
 export * from '../maps/siegfried/assets';
 export {siegfriedThemes} from '../maps/siegfried/siegfried-themes';
+
+import {sanborn as sanbornDefinition} from '../maps/sanborn';
+export const sanborn = freezeCommunityMap(sanbornDefinition);
+export {sanbornFonts, sanbornIcons} from '../maps/sanborn/assets';

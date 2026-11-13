@@ -1,5 +1,20 @@
 # Asset and preview notices
 
+## Sanborn design and fonts
+
+Sanborn is an original Tileflow design authored directly with the public Core modules. Its palette
+and lettering refer to the [Sanborn collection at the Library of Congress](https://guides.loc.gov/fire-insurance-maps/sanborn-interpreting).
+It includes no historical source-map data, scans or traced artwork. Contemporary building-use
+colours are a graphic interpretation, not construction-material or fire-insurance classifications.
+The New Orleans preview is a current Tileflow World renderer capture; preserve map data attribution
+to OpenStreetMap contributors, OpenMapTiles and Tileflow when displaying it.
+
+Sanborn Text is a name-table-only derivative of Adobe's Source Serif 4 Small Text 4.005, pinned to
+`80d3f8894c09c937bebfa9011247d2e1c79fd6f4`. Outlines, metrics, hinting and coverage are unchanged.
+The original copyright and SIL OFL 1.1 are retained in
+[`maps/sanborn/assets/fonts/LICENSE.txt`](maps/sanborn/assets/fonts/LICENSE.txt); the adjacent
+README and checksums document provenance and reproduction. Sanborn has its own packaged font files.
+
 ## Tileflow source and artwork
 
 Cyberpunk, Terminal, and Super Tile World were extracted from the corresponding map definitions and original

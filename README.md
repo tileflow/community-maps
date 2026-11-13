@@ -19,6 +19,11 @@ See [preview and asset attribution](THIRD_PARTY_NOTICES.md).
 | [Siegfried](maps/siegfried) | Alpine contours and engraved textures in light and dark ink. |
 | [Baedeker](maps/baedeker) | A warm travel atlas with serif lettering. |
 | [Blueprint](maps/blueprint) | The city as an architectural drawing. |
+| [Sanborn](maps/sanborn) | Yellow, rose and blue building sheets with ink outlines and clear lettering. One flat appearance. |
+
+[![Sanborn: a coloured building atlas of New Orleans](maps/sanborn/preview.webp)](maps/sanborn)
+
+Sanborn preview: New Orleans. Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright).
 
 ## Try a map
 
@@ -107,6 +112,7 @@ framework integration. Use the same Core version in the map package and its cons
 | Blueprint | `blueprint` | `blueprint` |
 | 1777 | `map1777` | `map-1777` |
 | Siegfried | `siegfried` | `siegfried` |
+| Sanborn | `sanborn` | `sanborn` |
 
 Baedeker, Blueprint, 1777 and Siegfried have moved here from `@tileflow/maps`.
 Change their imports to `@tileflow/community-maps`; their export names, map IDs, themes and
