@@ -17,7 +17,7 @@ See [preview and asset attribution](THIRD_PARTY_NOTICES.md).
 | --- | --- |
 | [1777](maps/map-1777) | Printed fields, forests and settlements, with four times of day. |
 | [Siegfried](maps/siegfried) | Alpine contours and engraved textures in light and dark ink. |
-| [Baedeker](maps/baedeker) | A warm travel atlas with serif lettering. |
+| [Watercolor](maps/watercolor) | Soft pigment, turquoise water and clear labels, in flat 2D. |
 | [Blueprint](maps/blueprint) | The city as an architectural drawing. |
 
 ## Try a map
@@ -107,6 +107,11 @@ framework integration. Use the same Core version in the map package and its cons
 | Blueprint | `blueprint` | `blueprint` |
 | 1777 | `map1777` | `map-1777` |
 | Siegfried | `siegfried` | `siegfried` |
+| Watercolor | `watercolor` | `watercolor` |
+
+Watercolor replaces Baedeker in the curated gallery. The `baedeker` export remains available
+for existing consumers. Watercolor's complete independent design lives in its own
+`maps/watercolor/tileflow.config.ts`; run `npm run preview:watercolor` to explore it.
 
 Baedeker, Blueprint, 1777 and Siegfried have moved here from `@tileflow/maps`.
 Change their imports to `@tileflow/community-maps`; their export names, map IDs, themes and
@@ -127,5 +132,5 @@ Add a new map or improve an existing one through a pull request. Start with
 ## License
 
 The extracted Tileflow code and original artwork retain the [Apache-2.0 license](LICENSE).
-Oxanium, Pixelify Sans, Tile World Arcade, Alegreya SC, Cormorant Garamond, DM Serif Text, Barlow Semi Condensed, and Noto Sans retain the font licenses shipped beside them. Map data has its own
+Oxanium, Pixelify Sans, Tile World Arcade, Alegreya SC, Cormorant Garamond, DM Serif Text, Barlow Semi Condensed, Lato, and Noto Sans retain the font licenses shipped beside them. Map data has its own
 attribution and usage terms. See [NOTICE](NOTICE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

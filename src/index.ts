@@ -32,3 +32,7 @@ import {siegfried as siegfriedDefinition} from '../maps/siegfried';
 export const siegfried = freezeCommunityMap(siegfriedDefinition);
 export * from '../maps/siegfried/assets';
 export {siegfriedThemes} from '../maps/siegfried/siegfried-themes';
+
+import {watercolor as watercolorDefinition} from '../maps/watercolor';
+export const watercolor = freezeCommunityMap(watercolorDefinition);
+export {watercolorFonts, watercolorIcons} from '../maps/watercolor/assets';
