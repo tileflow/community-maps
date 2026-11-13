@@ -1,5 +1,18 @@
 # Asset and preview notices
 
+## Watercolor
+
+Watercolor's map configuration, six procedural PNG washes and two SVG markers are original
+Tileflow code and artwork, licensed under Apache-2.0. The visual reference is
+[Stamen's Watercolor design and process](https://stamen.com/watercolor-process-3dd5135861fe/).
+No Stamen tiles, code or artwork are redistributed; this map is not affiliated with Stamen.
+Its London preview is a Tileflow CLI renderer capture from 2026-11-13, using current Tileflow
+World data. Map data © OpenStreetMap contributors, ODbL; preserve that attribution on display.
+
+Lato Regular, Bold and Italic are unmodified upstream files by Łukasz Dziedzic / tyPoland,
+licensed under SIL OFL 1.1. The complete license, exact upstream revision and SHA-256 hashes
+are in [Watercolor's font directory](maps/watercolor/assets/fonts/README.md).
+
 ## Tileflow source and artwork
 
 Cyberpunk, Terminal, and Super Tile World were extracted from the corresponding map definitions and original
