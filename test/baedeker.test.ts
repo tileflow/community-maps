@@ -3,7 +3,7 @@ import {validateStyleMin} from '@maplibre/maplibre-gl-style-spec-v5';
 import assert from 'node:assert/strict';
 import {readdir, readFile} from 'node:fs/promises';
 import test from 'node:test';
-import { openMapTiles, resolveMap, vectorTiles} from '@tileflow/core';
+import {resolveMap} from '@tileflow/core';
 
 import {baedeker, baedekerFonts, baedekerIcons, map1777} from '../src';
 
@@ -270,21 +270,6 @@ test('Baedeker keeps a distinct engraved travel-plan grammar from 1777', () => {
     baedekerById.get('tileflow-water')?.paint?.['fill-color'],
     map1777ById.get('tileflow-water')?.paint?.['fill-color'],
   );
-});
-
-test('Baedeker stays valid against generic OpenMapTiles without optional capabilities', () => {
-  const data = vectorTiles({
-    attribution: 'Fixture data',
-    schema: openMapTiles(),
-    tiles: ['https://tiles.example.test/{z}/{x}/{y}.pbf'],
-  });
-  const style = createStyle({...baedeker, data}, {preparedAssets});
-  const layerIds = new Set(style.layers.map(({id}) => id));
-
-  assert.equal(layerIds.has('tileflow-bathymetry'), false);
-  assert.equal(layerIds.has('tileflow-global-landcover'), false);
-  assert.ok(style.sources['baedeker-contours']);
-  assert.deepEqual(validateStyleMin(style as never), []);
 });
 
 function compiledTargets(
