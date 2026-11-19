@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.tileflow/
+*.tgz
+.DS_Store
+.env
+.env.*
+*.log

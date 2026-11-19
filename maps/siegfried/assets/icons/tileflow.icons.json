@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "icons": {
+    "siegfried-poi-landmark": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-church": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-worship": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-museum": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-station": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-lodging": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-refuge": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-ruins": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-viewpoint": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-medical": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-education": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-services": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-food": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-shop": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-park": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-water": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-sport": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-transport": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    },
+    "siegfried-poi-ferry": {
+      "representation": "sdf",
+      "defaults": {
+        "color": "#171713"
+      }
+    }
+  }
+}

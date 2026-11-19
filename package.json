@@ -1,0 +1,75 @@
+{
+  "name": "@tileflow/community-maps",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Maps made with Tileflow. Explore, remix, and contribute.",
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tileflow/community-maps.git"
+  },
+  "homepage": "https://github.com/tileflow/community-maps",
+  "bugs": {
+    "url": "https://github.com/tileflow/community-maps/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "maps/*/assets/**",
+    "LICENSE",
+    "NOTICE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --no-splitting",
+    "prepare": "npm run build",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "check:ci": "npm run typecheck && npm run check:models",
+    "check": "npm run check:models && npm run typecheck && npm run build && npm test && npm run validate:maps",
+    "validate:maps": "tileflow validate --config maps/cyberpunk/tileflow.config.ts && tileflow validate --config maps/super-tile-world/tileflow.config.ts && tileflow validate --config maps/baedeker/tileflow.config.ts && tileflow validate --config maps/map-1777/tileflow.config.ts && tileflow validate --config maps/siegfried/tileflow.config.ts && tileflow validate --config maps/watercolor/tileflow.config.ts",
+    "preview:cyberpunk": "tileflow preview --config maps/cyberpunk/tileflow.config.ts",
+    "build:cyberpunk": "tileflow build --config maps/cyberpunk/tileflow.config.ts --out .tileflow/build/cyberpunk",
+    "preview:super-tile-world": "tileflow preview --config maps/super-tile-world/tileflow.config.ts",
+    "build:super-tile-world": "tileflow build --config maps/super-tile-world/tileflow.config.ts --out .tileflow/build/super-tile-world",
+    "check:models": "node maps/super-tile-world/assets/build-trees.mjs --check",
+    "preview:baedeker": "tileflow preview --config maps/baedeker/tileflow.config.ts",
+    "build:baedeker": "tileflow build --config maps/baedeker/tileflow.config.ts --out .tileflow/build/baedeker",
+    "preview:map-1777": "tileflow preview --config maps/map-1777/tileflow.config.ts",
+    "build:map-1777": "tileflow build --config maps/map-1777/tileflow.config.ts --out .tileflow/build/map-1777",
+    "preview:siegfried": "tileflow preview --config maps/siegfried/tileflow.config.ts",
+    "build:siegfried": "tileflow build --config maps/siegfried/tileflow.config.ts --out .tileflow/build/siegfried",
+    "preview:watercolor": "tileflow preview --config maps/watercolor/tileflow.config.ts",
+    "build:watercolor": "tileflow build --config maps/watercolor/tileflow.config.ts --out .tileflow/build/watercolor"
+  },
+  "peerDependencies": {
+    "@tileflow/core": ">=0.1.0-alpha.48 <0.1.0-beta.0"
+  },
+  "devDependencies": {
+    "@maplibre/maplibre-gl-style-spec": "26.4.4",
+    "@maplibre/maplibre-gl-style-spec-v5": "npm:@maplibre/maplibre-gl-style-spec@24.8.5",
+    "@tileflow/core": "0.1.0-alpha.48",
+    "@tileflow/dev": "0.1.0-alpha.43",
+    "@types/node": "25.9.2",
+    "tileflow": "0.1.0-alpha.23",
+    "tsup": "8.5.1",
+    "tsx": "4.23.12",
+    "typescript": "6.0.3"
+  },
+  "overrides": {
+    "maplibre-gl": "6.16.0"
+  }
+}

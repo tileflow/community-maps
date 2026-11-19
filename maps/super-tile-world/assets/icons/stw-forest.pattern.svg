@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <title>Forest floor leaf marks</title>
+  <g fill="none" stroke="#73BE7B" stroke-width="2" stroke-linecap="round" opacity="0.65">
+    <path d="M23 26l-3-4m6 4v-6m3 6l3-4M86 86l-3-4m6 4v-6m3 6l3-4"/>
+  </g>
+  <g fill="#A1D68A" opacity="0.45"><ellipse cx="60" cy="52" rx="2.5" ry="1.5"/><ellipse cx="35" cy="103" rx="2" ry="1.5"/></g>
+</svg>
