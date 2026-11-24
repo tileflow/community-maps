@@ -256,10 +256,8 @@ test('Siegfried compiles contours and post-contour rock and ice engraving withou
   assert.equal(source?.type, 'vector');
   assert.equal(source?.minzoom, 8);
   assert.equal(source?.maxzoom, 14);
-  assert.equal(
-    source?.attribution,
-    'Terrain: <a href="https://mapterhorn.com/attribution">© Mapterhorn</a>',
-  );
+  // Tileflow Terrain is credited by the map's © Tileflow credit, not by the contour source.
+  assert.equal(source?.attribution, undefined);
   const contourUrl = new URL(String((source?.tiles as string[] | undefined)?.[0]));
   assert.equal(contourUrl.protocol, 'tileflow-contour:');
   assert.equal(

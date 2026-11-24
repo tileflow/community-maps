@@ -306,7 +306,6 @@ export const siegfried = bindCommunityMapTheme(
     systemThemes: {light: 'light', dark: 'dark'},
     projection: 'mercator',
     terrain: {
-      attribution: 'Terrain: <a href="https://mapterhorn.com/attribution">© Mapterhorn</a>',
       contours: {
         demMaxZoom: 12,
         index: {
