@@ -173,7 +173,7 @@ test('Baedeker compiles its exact pattern vocabulary and semantic travel-atlas s
   );
 });
 
-test('Baedeker compiles Mapterhorn contours without enabling raster terrain or hillshade', () => {
+test('Baedeker compiles Tileflow Terrain contours without enabling raster terrain or hillshade', () => {
   const style = createStyle(baedeker, {preparedAssets});
   const source = style.sources['baedeker-contours'];
   const ids = style.layers.map(({id}) => id);
@@ -186,10 +186,8 @@ test('Baedeker compiles Mapterhorn contours without enabling raster terrain or h
   assert.equal(source?.type, 'vector');
   assert.equal(source?.minzoom, 8);
   assert.equal(source?.maxzoom, 14);
-  assert.equal(
-    source?.attribution,
-    'Terrain: <a href="https://mapterhorn.com/attribution">© Mapterhorn</a>',
-  );
+  // Tileflow Terrain is credited by the map's © Tileflow credit, not by the contour source.
+  assert.equal(source?.attribution, undefined);
   const contourUrl = new URL(String((source?.tiles as string[] | undefined)?.[0]));
   assert.equal(contourUrl.protocol, 'tileflow-contour:');
   assert.equal(

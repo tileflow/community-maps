@@ -124,8 +124,8 @@ or endorsed by Baedeker or Wagner & Debes.
 At runtime, Baedeker derives contour vectors in the browser from Tileflow Terrain tiles, which
 carry Mapterhorn terrain data. No terrain tile is packaged or redistributed by this repository. Mapterhorn publishes the full
 catalog of its constituent open terrain sources and their individual attribution and license terms
-at <https://mapterhorn.com/attribution/>. The compiled Style carries that link as source
-attribution.
+at <https://mapterhorn.com/attribution/>. Tileflow credits Mapterhorn and its sources at
+<https://tileflow.dev/copyright#terrain>, the page the map's © Tileflow credit links to.
 
 
 ## Siegfried Map reference and terrain data
@@ -146,8 +146,8 @@ not a reproduced or historically documented swisstopo colourway.
 At runtime, Siegfried derives contour vectors in the browser from Tileflow Terrain tiles, which
 carry Mapterhorn terrain data. No terrain tile is packaged or redistributed by this repository. Mapterhorn publishes the full
 catalog of its constituent open terrain sources and their individual attribution and license terms
-at <https://mapterhorn.com/attribution/>. The compiled Style carries that link as source
-attribution.
+at <https://mapterhorn.com/attribution/>. Tileflow credits Mapterhorn and its sources at
+<https://tileflow.dev/copyright#terrain>, the page the map's © Tileflow credit links to.
 
 
 ## Cormorant Garamond

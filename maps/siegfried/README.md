@@ -65,6 +65,5 @@ The code and original Tileflow artwork are licensed under Apache-2.0. Fonts reta
 them. Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright),
 OpenMapTiles and Tileflow. See [complete asset notices](../../THIRD_PARTY_NOTICES.md).
 
-The local preview uses public [Mapterhorn elevation](https://mapterhorn.com/attribution/).
-The exported design keeps its configurable Tileflow Terrain default. Geographic tiles are requested
-at runtime and are not bundled.
+The local preview and the exported design read Tileflow Terrain by default. Geographic tiles are
+requested at runtime and are not bundled.

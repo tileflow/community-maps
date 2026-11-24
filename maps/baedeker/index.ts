@@ -400,7 +400,6 @@ export const baedeker = bindCommunityMapTheme(
     defaultTheme: 'light',
     projection: 'mercator',
     terrain: {
-      attribution: 'Terrain: <a href="https://mapterhorn.com/attribution">© Mapterhorn</a>',
       contours: {
         demMaxZoom: 12,
         index: {
